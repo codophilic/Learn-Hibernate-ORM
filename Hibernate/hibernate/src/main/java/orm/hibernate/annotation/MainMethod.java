@@ -11,6 +11,8 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
 import orm.hibernate.annotation.Address.formStatus;
+import orm.hibernate.annotation.onetoone.Payroll;
+import orm.hibernate.annotation.onetoone.Personal;
 
 public class MainMethod {
   public static void main(String[] args) {
@@ -101,6 +103,19 @@ public class MainMethod {
 	  empadd.setAddress2("xyz");
 	  emp.setEmpAddr(empadd);
 	  session.save(emp);
+	  
+	  Personal ps=new Personal();
+	  ps.setEmpid_personal(1);
+	  ps.setFirstname("Harsh");
+	  ps.setLastname("Pandya");
+	  
+	  Payroll py=new Payroll();
+	  py.setEmpid_of_payroll(1);
+	  py.setPayrate(1000);
+	  ps.setPayroll(py);
+	  
+	  session.save(ps);
+	  session.save(py);
 	  
 	  tx.commit();
 	  

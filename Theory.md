@@ -1031,5 +1031,276 @@ public class Payroll {
 }
 ```
 
-- 
+- Below is the hibernate config xml file.
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration SYSTEM 
+"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<!-- Version 8 MySQL hiberante-cfg.xml example for Hibernate 5 -->
+<hibernate-configuration>
+  <session-factory>
+  <!-- Driver name -->
+    <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+    <!-- property name="connection.driver_class">com.mysql.jdbc.Driver</property -->
+    <property name="connection.url">jdbc:mysql://localhost:3306/myhibernatedb</property>
+    <!-- 
+    a "dialect" is a configuration setting that specifies the type of database you are using. 
+    It tells Hibernate how to generate the appropriate SQL statements for your particular database system,
+     as different databases have different SQL syntax, data types, and functions.
+     -->
+    <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+    <property name="connection.username">root</property>
+    <property name="connection.password">Meetpandya40@</property>
+<!--     <property name="connection.pool_size">3</property>
+ -->    <!--property name="dialect">org.hibernate.dialect.MySQLDialect</property-->
+<!--     <property name="current_session_context_class">thread</property>
+ -->    
+ 	<!-- 
+ 	show sql =  true states that whatever hibernate fires the query it will show in the console.
+ 	 -->
+    <property name="show_sql">true</property>
+    <property name="format_sql">true</property>
+    
+    <!-- 
+    When we use create , it will create table , but if existing tables are there those will get deleted
+    and again will get created. So it is better to use update over create. It will create only once if
+    table does not exists.
+     -->
+    <property name="hbm2ddl.auto">create</property>
+    <!-- mapping class="com.mcnz.jpa.examples.Player" / -->
+<!--     <mapping class="orm.hibernate.annotation.Student"/>
+    <mapping class="orm.hibernate.annotation.Address"/>
+    <mapping class="orm.hibernate.annotation.Employee"/> -->
+    <mapping class="orm.hibernate.annotation.onetoone.Personal" />
+    <mapping class="orm.hibernate.annotation.onetoone.Payroll" />
+  </session-factory>
+</hibernate-configuration>
+```
+
+- Post execution main method, we can see the query log on the console.
+
+```
+package orm.hibernate.annotation;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Date;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+
+import orm.hibernate.annotation.Address.formStatus;
+import orm.hibernate.annotation.onetoone.Payroll;
+import orm.hibernate.annotation.onetoone.Personal;
+
+public class MainMethod {
+  public static void main(String[] args) {
+
+	  /**
+	   * This line creates a new instance of the Configuration class from Hibernate.
+	   * The Configuration object is used to configure Hibernate and set up its properties.
+	   */
+	  Configuration con=new Configuration();
+	  
+	  /**
+	   * This line tells the Configuration object to load the configuration settings from the file
+	   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+	   * The XML file contains important settings such as database connection details, dialect, 
+	   *  mappings, and other Hibernate configurations.
+	   */
+	  con.configure("orm/hibernate/annotation/hibernateConfig.cfg.xml");
+  
+	  /**
+	   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+	   * which are used to interact with the database. The SessionFactory is typically created once 
+	   * and used to create multiple Session instances.
+	   */
+	  SessionFactory ssf=con.buildSessionFactory();
+	  
+	  /**
+	   * Created a session
+	   */
+	  Session session=ssf.openSession();
+	  
+	  /**
+	   * Using session we created a new transaction
+	   */
+	  Transaction tx=session.beginTransaction();
+	  
+	  
+	  Student st=new Student();
+	  st.setId(1);
+	  st.setName("Harsh");
+	  st.setCity("Mumbai");
+	  
+	  /**
+	   * Save or inserted student object
+	   */
+	  session.save(st);
+
+	  
+	  Address address=new Address();
+	  address.setAddress1("abc");
+	  address.setAddress2("xyz");
+	  address.setForm(formStatus.PENDING);
+	  address.setStores_date(new Date());
+	  address.setStores_timestamp(new Date());
+	  try {
+		FileInputStream fis=new FileInputStream("src/main/java/orm/hibernate/annotation/image.png");
+		try {
+			byte[] image=new byte[fis.available()];
+			address.setPhoto(image);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	} catch (FileNotFoundException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	  
+	  session.save(address);
+	  
+	  /**
+	   * Using Get Method
+	   */
+	  Address ad=session.get(Address.class, 1);
+	  System.out.println(ad.getAddress1()+" "+ad.getAddress2());
+
+	  /**
+	   * Using Load Method
+	   */
+	  Address ad1=session.load(Address.class, 1);
+	  System.out.println(ad1.getAddress1()+" "+ad1.getAddress2());
+	  
+	  Employee emp=new Employee();
+	  emp.setEmpid("1");
+	  emp.setDeptname("mumbai");
+	  
+	  EmployeeAddress empadd=new EmployeeAddress();
+	  empadd.setAddress1("abc");
+	  empadd.setAddress2("xyz");
+	  emp.setEmpAddr(empadd);
+	  session.save(emp);
+	  
+	  Personal ps=new Personal();
+	  ps.setEmpid(1);
+	  ps.setFirstname("Harsh");
+	  ps.setLastname("Pandya");
+	  
+	  Payroll py=new Payroll();
+	  py.setEmpid(1);
+	  py.setPayrate(1000);
+	  ps.setPayroll(py);
+	  
+	  session.save(ps);
+	  session.save(py);
+	  
+	  tx.commit();
+	  
+	  /**
+	   * Close the resources
+	   */
+	  
+	  session.close();
+	  
+	  
+			  
+  }
+}
+
+
+
+Output:
+Hibernate: 
+    alter table one_to_one_personal 
+       drop 
+       foreign key FK47g9qrht6wxck2r11m9a55k2
+Jul 26, 2024 12:18:47 AM org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl getIsolatedConnection
+INFO: HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@353e6389] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+Hibernate: 
+    drop table if exists one_to_one_payroll
+Hibernate: 
+    drop table if exists one_to_one_personal
+Hibernate: 
+    create table one_to_one_payroll (
+        empid integer not null,
+        payrate float(53) not null,
+        primary key (empid)
+    ) engine=InnoDB
+Jul 26, 2024 12:18:47 AM org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl getIsolatedConnection
+INFO: HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@299b9851] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+Hibernate: 
+    create table one_to_one_personal (
+        empid integer not null,
+        payroll_empid integer,
+        firstname varchar(255),
+        lastname varchar(255),
+        primary key (empid)
+    ) engine=InnoDB
+Hibernate: 
+    alter table one_to_one_personal 
+       add constraint UK4kkwyykxk478uksdive0f9cl8 unique (payroll_empid)
+Hibernate: 
+    alter table one_to_one_personal 
+       add constraint FK47g9qrht6wxck2r11m9a55k2 
+       foreign key (payroll_empid) 
+       references one_to_one_payroll (empid)
+Hibernate: 
+    select
+        null,
+        p1_0.payrate 
+    from
+        one_to_one_payroll p1_0 
+    where
+        p1_0.empid=?
+Hibernate: 
+    insert 
+    into
+        one_to_one_personal
+        (firstname, lastname, payroll_empid, empid) 
+    values
+        (?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        one_to_one_payroll
+        (payrate, empid) 
+    values
+        (?, ?)
+Hibernate: 
+    update
+        one_to_one_personal 
+    set
+        firstname=?,
+        lastname=?,
+        payroll_empid=? 
+    where
+        empid=?
+```
+- Since in the cfg xml file we have mentioned `<property name="hbm2ddl.auto">create</property>` , so hibernates drops the table and re-creates it. PS: earlier the table was created.
+- Now when observe the query alter of table, we can see payroll_empid is foreign key in table one_to_one_personal.
+
+```
+    alter table one_to_one_personal 
+       add constraint FK47g9qrht6wxck2r11m9a55k2 
+       foreign key (payroll_empid) 
+       references one_to_one_payroll (empid)
+```
+
+![alt text](image-5.png)
+
+![alt text](image-4.png)
+
+![alt text](image-6.png) 
+
+#### One-to-Many
+- A one-to-many (1:N) relationship means a record in Table A can relate to zero, one, or many records in Table B. Many records in Table B can relate to one record in Table A. 
+
+![alt text](image-7.png)
+
 

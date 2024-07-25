@@ -1,6 +1,7 @@
 package orm.hibernate.annotation.onetoone;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -8,21 +9,23 @@ import jakarta.persistence.Table;
 @Table(name="one_to_one_personal")
 public class Personal {
 
-	private int empid;
+	@Id
+	private int empid_personal;
 	
 	private String firstname;
 	
 	private String lastname;
 	
-	@OneToOne
+	@OneToOne(mappedBy = "empid_of_payroll")
 	private Payroll payroll;
 
-	public int getEmpid() {
-		return empid;
+
+	public int getEmpid_personal() {
+		return empid_personal;
 	}
 
-	public void setEmpid(int empid) {
-		this.empid = empid;
+	public void setEmpid_personal(int empid_personal) {
+		this.empid_personal = empid_personal;
 	}
 
 	public String getFirstname() {
