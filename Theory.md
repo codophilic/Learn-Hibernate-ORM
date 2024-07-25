@@ -27,8 +27,15 @@
 
 - ORM (Object-Relational Mapping) techniques can be integrated with many programming languages. ORM is a general approach to bridge the gap between object-oriented programming languages and relational databases, allowing developers to work with data using objects rather than raw SQL queries.
 - In the Java ecosystem, several popular ORM tools and frameworks leverage the ORM technique to facilitate database interactions. These tools are **Hibernate,JPA (Java Persistence API), TopLink and many more.**
+- **ORMs have been primarily designed for relational databases (RDBMS). The concept of mapping objects to relational tables has been the core focus. This is why ORMs like Hibernate, SQLAlchemy, and Entity Framework have flourished in this domain.**
 
 ## Hibernate
 - Hibernate is a Java framework that simplifies the development of Java application to interact with the database. It is an open source, lightweight, ORM (Object Relational Mapping) tool.
 - By mapping Java objects to database tables, it streamlines data persistence and retrieval without the need for complex SQL queries.
-- 
+- **Hibernate primarily works with Relational Database Management Systems (RDBMS). It's designed to bridge the gap between object-oriented programming languages (like Java) and relational databases.**
+- Lets say we have a Student class
+
+```
+class St
+
+
