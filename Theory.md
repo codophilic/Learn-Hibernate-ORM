@@ -18,3 +18,17 @@
 - Object-Relational Mapping, is a technique used in programming to map objects in your code to tables in a relational database. This mapping allows developers to interact with the database using the same object-oriented paradigms they use in their code, rather than writing raw SQL queries.
 
 ![image](https://github.com/user-attachments/assets/eeec2955-558c-4c52-bcde-e3ea4c92b7ec)
+
+## Why ORM?
+1. **Abstraction:** ORM provides a layer of abstraction over the database, which makes it easier to work with the database using object-oriented principles. You don't have to write complex SQL queries; instead, you can work with objects and methods.
+2. **Convenience:** It simplifies database operations like insert, update, delete, and query by allowing you to use your programming language's syntax and features, such as classes and objects.
+3. **Code Readability:** Using ORM makes the code more readable and maintainable. You define your data structure and relationships in the code, and the ORM handles the rest.
+4. **Portability:** It can make it easier to switch between different types of databases (e.g., MySQL, PostgreSQL) because the ORM abstracts the specifics of each database.
+
+- ORM (Object-Relational Mapping) techniques can be integrated with many programming languages. ORM is a general approach to bridge the gap between object-oriented programming languages and relational databases, allowing developers to work with data using objects rather than raw SQL queries.
+- In the Java ecosystem, several popular ORM tools and frameworks leverage the ORM technique to facilitate database interactions. These tools are **Hibernate,JPA (Java Persistence API), TopLink and many more.**
+
+## Hibernate
+- Hibernate is a Java framework that simplifies the development of Java application to interact with the database. It is an open source, lightweight, ORM (Object Relational Mapping) tool.
+- By mapping Java objects to database tables, it streamlines data persistence and retrieval without the need for complex SQL queries.
+- 
