@@ -33,9 +33,9 @@
      -->
     <property name="hbm2ddl.auto">create</property>
     <!-- mapping class="com.mcnz.jpa.examples.Player" / -->
-    <mapping class="orm.hibernate.annotation.Student"/>
+<!--     <mapping class="orm.hibernate.annotation.Student"/>
     <mapping class="orm.hibernate.annotation.Address"/>
-    <mapping class="orm.hibernate.annotation.Employee"/>
+    <mapping class="orm.hibernate.annotation.Employee"/> -->
     <mapping class="orm.hibernate.annotation.onetoone.Personal" />
     <mapping class="orm.hibernate.annotation.onetoone.Payroll" />
   </session-factory>

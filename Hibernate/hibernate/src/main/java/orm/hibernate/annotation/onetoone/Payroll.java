@@ -9,12 +9,10 @@ public class Payroll {
 	@Id
 	private int empid_of_payroll;
 	
+	@Column(unique = true)
 	private double payrate;
 	
-	/**
-	 * Mapping foreign key based
-	 */
-	@OneToOne(mappedBy="empid_personal")
+	@OneToOne(mappedBy = "personalEmployeesPayroll")
 	private Personal personal;
 
 

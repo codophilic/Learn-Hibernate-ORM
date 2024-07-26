@@ -1,7 +1,9 @@
 package orm.hibernate.annotation.onetoone;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -12,12 +14,14 @@ public class Personal {
 	@Id
 	private int empid_personal;
 	
+	@Column(unique = true)
 	private String firstname;
 	
 	private String lastname;
 	
-	@OneToOne(mappedBy = "empid_of_payroll")
-	private Payroll payroll;
+	@OneToOne
+    @JoinColumn(name="foreignkey_payroll_payrate",referencedColumnName = "payrate")
+	private Payroll personalEmployeesPayroll;
 
 
 	public int getEmpid_personal() {
@@ -44,14 +48,14 @@ public class Personal {
 		this.lastname = lastname;
 	}
 
-	public Payroll getPayroll() {
-		return payroll;
+	public Payroll getPersonalEmployeesPayroll() {
+		return personalEmployeesPayroll;
 	}
 
-	public void setPayroll(Payroll payroll) {
-		this.payroll = payroll;
+	public void setPersonalEmployeesPayroll(Payroll personalEmployeesPayroll) {
+		this.personalEmployeesPayroll = personalEmployeesPayroll;
 	}
-	
+
 	
 	
 }

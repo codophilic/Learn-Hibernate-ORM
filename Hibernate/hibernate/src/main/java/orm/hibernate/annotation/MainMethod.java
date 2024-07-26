@@ -112,7 +112,8 @@ public class MainMethod {
 	  Payroll py=new Payroll();
 	  py.setEmpid_of_payroll(1);
 	  py.setPayrate(1000);
-	  ps.setPayroll(py);
+	  ps.setPersonalEmployeesPayroll(py);
+	  py.setPersonal(ps);
 	  
 	  session.save(ps);
 	  session.save(py);
