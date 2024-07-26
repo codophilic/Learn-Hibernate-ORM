@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -13,6 +14,8 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
 import orm.hibernate.annotation.Address.formStatus;
+import orm.hibernate.annotation.manytomany.EmployeeProjects;
+import orm.hibernate.annotation.manytomany.Projects;
 import orm.hibernate.annotation.onetomany.Customer;
 import orm.hibernate.annotation.onetomany.CustomerOrder;
 import orm.hibernate.annotation.onetoone.Payroll;
@@ -143,6 +146,34 @@ public class MainMethod {
 	  session.save(cust);
 	  session.save(custOrder1);
 	  session.save(custOrder2);
+	  
+	  EmployeeProjects empProject1=new EmployeeProjects();
+	  empProject1.setEmpId(1);
+	  empProject1.setEmpName("Harsh");
+	  EmployeeProjects empProject2=new EmployeeProjects();
+	  empProject2.setEmpId(2);
+	  empProject2.setEmpName("Meet");	
+	  
+	  Projects proj1=new Projects();
+	  proj1.setProjectId(404);
+	  proj1.setProjectName("AI");
+	  Projects proj2=new Projects();
+	  proj2.setProjectId(405);
+	  proj2.setProjectName("Hibernate");
+	  
+	  empProject1.setEmpWorkingonProjects(Arrays.asList(proj1,proj2));
+	  empProject2.setEmpWorkingonProjects(Arrays.asList(proj1));
+	  
+	  proj1.setProjectAssignToemp(Arrays.asList(empProject1,empProject2));
+	  proj2.setProjectAssignToemp(Arrays.asList(empProject2));
+	  
+	  session.save(empProject1);
+	  session.save(empProject2);
+	  session.save(proj1);
+	  session.save(proj2);
+	  
+	  
+	  
 	  tx.commit();
 	  
 	  /**

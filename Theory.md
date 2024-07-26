@@ -2056,6 +2056,593 @@ Hibernate:
 ![alt text](image-15.png) 
 
 #### Many-To-Many
+- In a relational database, a many-to-many relationship between two tables is not supported directly. Instead, it is handled by creating a junction (or join) table that stores foreign keys referencing the primary keys of the two related tables.
+- In a many-to-many relationship, each record in Table A can be related to multiple records in Table B, and each record in Table B can be related to multiple records in Table A. To manage this relationship in an RDBMS, a junction table is used.
+
+![alt text](image-16.png) 
+
+![alt text](image-17.png) 
+
+- An intersection table and two one-to-many relationships
+- This forms two one-to-many relationships; each employee can work on many projects and many employees can work on a single project.
+- In hibernate, to achieve this we have `@ManyToMany`. Lets say we have two classes EmployeeProjects and Projects+.
+
+```
+package orm.hibernate.annotation.manytomany;
+
+import java.util.List;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "many_to_many_employeeprojects")
+public class EmployeeProjects {
+
+	@Id
+	private int empId;
+	
+	private String empName;
+	
+	@ManyToMany
+	private List<Projects> empWorkingonProjects;
+
+	public int getEmpId() {
+		return empId;
+	}
+
+	public void setEmpId(int empId) {
+		this.empId = empId;
+	}
+
+	public String getEmpName() {
+		return empName;
+	}
+
+	public void setEmpName(String empName) {
+		this.empName = empName;
+	}
+
+	public List<Projects> getEmpWorkingonProjects() {
+		return empWorkingonProjects;
+	}
+
+	public void setEmpWorkingonProjects(List<Projects> empWorkingonProjects) {
+		this.empWorkingonProjects = empWorkingonProjects;
+	}
+	
+	
+}
+
+
+package orm.hibernate.annotation.manytomany;
+
+import java.util.List;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "many_to_many_projects")
+public class Projects {
+
+	@Id
+	private int projectId;
+	
+	private String projectName;
+	
+	@ManyToMany
+	private List<EmployeeProjects> projectAssignToemp;
+
+	public int getProjectId() {
+		return projectId;
+	}
+
+	public void setProjectId(int projectId) {
+		this.projectId = projectId;
+	}
+
+	public String getProjectName() {
+		return projectName;
+	}
+
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
+	}
+
+	public List<EmployeeProjects> getProjectAssignToemp() {
+		return projectAssignToemp;
+	}
+
+	public void setProjectAssignToemp(List<EmployeeProjects> projectAssignToemp) {
+		this.projectAssignToemp = projectAssignToemp;
+	}
+	
+	
+	
+}
+```
+
+- Below is the hibernate cfg xml file.
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration SYSTEM 
+"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<!-- Version 8 MySQL hiberante-cfg.xml example for Hibernate 5 -->
+<hibernate-configuration>
+  <session-factory>
+  <!-- Driver name -->
+    <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+    <!-- property name="connection.driver_class">com.mysql.jdbc.Driver</property -->
+    <property name="connection.url">jdbc:mysql://localhost:3306/myhibernatedb</property>
+    <!-- 
+    a "dialect" is a configuration setting that specifies the type of database you are using. 
+    It tells Hibernate how to generate the appropriate SQL statements for your particular database system,
+     as different databases have different SQL syntax, data types, and functions.
+     -->
+    <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+    <property name="connection.username">root</property>
+    <property name="connection.password">Meetpandya40@</property>
+<!--     <property name="connection.pool_size">3</property>
+ -->    <!--property name="dialect">org.hibernate.dialect.MySQLDialect</property-->
+<!--     <property name="current_session_context_class">thread</property>
+ -->    
+ 	<!-- 
+ 	show sql =  true states that whatever hibernate fires the query it will show in the console.
+ 	 -->
+    <property name="show_sql">true</property>
+    <property name="format_sql">true</property>
+    
+    <!-- 
+    When we use create , it will create table , but if existing tables are there those will get deleted
+    and again will get created. So it is better to use update over create. It will create only once if
+    table does not exists.
+     -->
+    <property name="hbm2ddl.auto">create</property>
+    <!-- mapping class="com.mcnz.jpa.examples.Player" / -->
+<!--     <mapping class="orm.hibernate.annotation.Student"/>
+    <mapping class="orm.hibernate.annotation.Address"/>
+    <mapping class="orm.hibernate.annotation.Employee"/>
+    <mapping class="orm.hibernate.annotation.onetoone.Personal" />
+    <mapping class="orm.hibernate.annotation.onetoone.Payroll" /> 
+    <mapping class="orm.hibernate.annotation.onetomany.Customer" />
+    <mapping class="orm.hibernate.annotation.onetomany.CustomerOrder" /> -->
+    <mapping class="orm.hibernate.annotation.manytomany.EmployeeProjects" />
+    <mapping class="orm.hibernate.annotation.manytomany.Projects" />    
+  </session-factory>
+</hibernate-configuration>
+```
+
+- Below is the main method, can you guess how much tables will be created?
+
+```
+package orm.hibernate.annotation;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+
+import orm.hibernate.annotation.Address.formStatus;
+import orm.hibernate.annotation.manytomany.EmployeeProjects;
+import orm.hibernate.annotation.manytomany.Projects;
+import orm.hibernate.annotation.onetomany.Customer;
+import orm.hibernate.annotation.onetomany.CustomerOrder;
+import orm.hibernate.annotation.onetoone.Payroll;
+import orm.hibernate.annotation.onetoone.Personal;
+
+public class MainMethod {
+  public static void main(String[] args) {
+
+	  /**
+	   * This line creates a new instance of the Configuration class from Hibernate.
+	   * The Configuration object is used to configure Hibernate and set up its properties.
+	   */
+	  Configuration con=new Configuration();
+	  
+	  /**
+	   * This line tells the Configuration object to load the configuration settings from the file
+	   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+	   * The XML file contains important settings such as database connection details, dialect, 
+	   *  mappings, and other Hibernate configurations.
+	   */
+	  con.configure("orm/hibernate/annotation/hibernateConfig.cfg.xml");
+  
+	  /**
+	   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+	   * which are used to interact with the database. The SessionFactory is typically created once 
+	   * and used to create multiple Session instances.
+	   */
+	  SessionFactory ssf=con.buildSessionFactory();
+	  
+	  /**
+	   * Created a session
+	   */
+	  Session session=ssf.openSession();
+	  
+	  /**
+	   * Using session we created a new transaction
+	   */
+	  Transaction tx=session.beginTransaction();
+	  
+	  EmployeeProjects empProject1=new EmployeeProjects();
+	  empProject1.setEmpId(1);
+	  empProject1.setEmpName("Harsh");
+	  EmployeeProjects empProject2=new EmployeeProjects();
+	  empProject2.setEmpId(2);
+	  empProject2.setEmpName("Meet");	
+	  
+	  Projects proj1=new Projects();
+	  proj1.setProjectId(404);
+	  proj1.setProjectName("AI");
+	  Projects proj2=new Projects();
+	  proj2.setProjectId(405);
+	  proj2.setProjectName("Hibernate");
+	  
+	  empProject1.setEmpWorkingonProjects(Arrays.asList(proj1,proj2));
+	  empProject2.setEmpWorkingonProjects(Arrays.asList(proj1));
+	  
+	  proj1.setProjectAssignToemp(Arrays.asList(empProject1,empProject2));
+	  proj2.setProjectAssignToemp(Arrays.asList(empProject2));
+	  
+	  session.save(empProject1);
+	  session.save(empProject2);
+	  session.save(proj1);
+	  session.save(proj2);
+	  
+	  
+	  
+	  tx.commit();
+	  
+	  /**
+	   * Close the resources
+	   */
+	  
+	  session.close();
+	  
+	  
+			  
+  }
+}
+
+
+Output:
+Hibernate: 
+    create table many_to_many_employeeprojects (
+        empId integer not null,
+        empName varchar(255),
+        primary key (empId)
+    ) engine=InnoDB
+Hibernate: 
+    create table many_to_many_employeeprojects_many_to_many_projects (
+        EmployeeProjects_empId integer not null,
+        empWorkingonProjects_projectId integer not null
+    ) engine=InnoDB
+Hibernate: 
+    create table many_to_many_projects (
+        projectId integer not null,
+        projectName varchar(255),
+        primary key (projectId)
+    ) engine=InnoDB
+Hibernate: 
+    create table many_to_many_projects_many_to_many_employeeprojects (
+        Projects_projectId integer not null,
+        projectAssignToemp_empId integer not null
+    ) engine=InnoDB
+Hibernate: 
+    alter table many_to_many_employeeprojects_many_to_many_projects 
+       add constraint FK1ndi0cjgtt5t4nydn303awyb7 
+       foreign key (empWorkingonProjects_projectId) 
+       references many_to_many_projects (projectId)
+Hibernate: 
+    alter table many_to_many_employeeprojects_many_to_many_projects 
+       add constraint FKgpb1ds9rwalup691ohr8vwgn3 
+       foreign key (EmployeeProjects_empId) 
+       references many_to_many_employeeprojects (empId)
+Hibernate: 
+    alter table many_to_many_projects_many_to_many_employeeprojects 
+       add constraint FKnq1r6qf93rurnsxnrlh3qoqew 
+       foreign key (projectAssignToemp_empId) 
+       references many_to_many_employeeprojects (empId)
+Hibernate: 
+    alter table many_to_many_projects_many_to_many_employeeprojects 
+       add constraint FKdr9wdftbx64ktpp95ycqu5r6e 
+       foreign key (Projects_projectId) 
+       references many_to_many_projects (projectId)
+Hibernate: 
+    insert 
+    into
+        many_to_many_employeeprojects
+        (empName, empId) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_many_employeeprojects
+        (empName, empId) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_many_projects
+        (projectName, projectId) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_many_projects
+        (projectName, projectId) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_many_employeeprojects_many_to_many_projects
+        (EmployeeProjects_empId, empWorkingonProjects_projectId) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_many_employeeprojects_many_to_many_projects
+        (EmployeeProjects_empId, empWorkingonProjects_projectId) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_many_employeeprojects_many_to_many_projects
+        (EmployeeProjects_empId, empWorkingonProjects_projectId) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_many_projects_many_to_many_employeeprojects
+        (Projects_projectId, projectAssignToemp_empId) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_many_projects_many_to_many_employeeprojects
+        (Projects_projectId, projectAssignToemp_empId) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_many_projects_many_to_many_employeeprojects
+        (Projects_projectId, projectAssignToemp_empId) 
+    values
+        (?, ?)
+```
+
+- We can see there are **4** tables created. 
+	1. many_to_many_employeeprojects
+	2. many_to_many_projects
+	3. many_to_many_employeeprojects_many_to_many_projects
+	4. many_to_many_projects_many_to_many_employeeprojects
+
+- Why so? because we have told mentioned `@ManyToMany` annotation for both the classes. So wrto **many_to_many_employeeprojects** table the juntion or join table using **many_to_many_projects** is **many_to_many_employeeprojects_many_to_many_projects** and wrto **many_to_many_projects** table the join table using **many_to_many_employeeprojects** is **many_to_many_projects_many_to_many_employeeprojects**. 
+- Whenever hibernates creates a table it follows a format **tableName1_tableName2**.
+- Below are the data details for all 4 of the tables.
+- Table: many_to_many_employeeprojects
+
+![alt text](image-18.png)
+
+- Table: many_to_many_projects
+
+![alt text](image-19.png) 
+
+- Table: many_to_many_employeeprojects_many_to_many_projects, it consist of two foreign keys.
+
+![alt text](image-20.png) 
+
+- Table: many_to_many_projects_many_to_many_employeeprojects, it also consist of two foreign keys.
+
+![alt text](image-21.png)
+
+- Lets normalize the DB by removing **many_to_many_projects_many_to_many_employeeprojects** table. Table **many_to_many_employeeprojects_many_to_many_projects** can be used for references for all sort of relations.
+- Also lets give the join table and its columns a custom name.
+
+```
+package orm.hibernate.annotation.manytomany;
+
+import java.util.List;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "many_to_many_employeeprojects")
+public class EmployeeProjects {
+
+	@Id
+	private int empId;
+	
+	private String empName;
+	
+	@ManyToMany
+	@JoinTable(
+			name ="joined_table_employee_project",
+			joinColumns= { @JoinColumn( name="employee_ids") }, //EmployeeProject -> empid
+			inverseJoinColumns = { @JoinColumn( name="project_ids") } //Projects -> projectId 
+			)
+	private List<Projects> empWorkingonProjects;
+
+	public int getEmpId() {
+		return empId;
+	}
+
+	public void setEmpId(int empId) {
+		this.empId = empId;
+	}
+
+	public String getEmpName() {
+		return empName;
+	}
+
+	public void setEmpName(String empName) {
+		this.empName = empName;
+	}
+
+	public List<Projects> getEmpWorkingonProjects() {
+		return empWorkingonProjects;
+	}
+
+	public void setEmpWorkingonProjects(List<Projects> empWorkingonProjects) {
+		this.empWorkingonProjects = empWorkingonProjects;
+	}
+	
+	
+}
+
+
+
+package orm.hibernate.annotation.manytomany;
+
+import java.util.List;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "many_to_many_projects")
+public class Projects {
+
+	@Id
+	private int projectId;
+	
+	private String projectName;
+	
+	@ManyToMany(mappedBy = "empWorkingonProjects")
+	private List<EmployeeProjects> projectAssignToemp;
+
+	public int getProjectId() {
+		return projectId;
+	}
+
+	public void setProjectId(int projectId) {
+		this.projectId = projectId;
+	}
+
+	public String getProjectName() {
+		return projectName;
+	}
+
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
+	}
+
+	public List<EmployeeProjects> getProjectAssignToemp() {
+		return projectAssignToemp;
+	}
+
+	public void setProjectAssignToemp(List<EmployeeProjects> projectAssignToemp) {
+		this.projectAssignToemp = projectAssignToemp;
+	}
+	
+	
+	
+}
+```
+
+- Post execution of main method, we have now 3 tables.
+
+```
+Code remains the same of main method
+
+Output:
+Hibernate: 
+    create table joined_table_employee_project (
+        employee_ids integer not null,
+        project_ids integer not null
+    ) engine=InnoDB
+Hibernate: 
+    create table many_to_many_employeeprojects (
+        empId integer not null,
+        empName varchar(255),
+        primary key (empId)
+    ) engine=InnoDB
+Hibernate: 
+    create table many_to_many_projects (
+        projectId integer not null,
+        projectName varchar(255),
+        primary key (projectId)
+    ) engine=InnoDB
+Hibernate: 
+    alter table joined_table_employee_project 
+       add constraint FK6eh8fs0x3k573cjlfeud8xyu2 
+       foreign key (project_ids) 
+       references many_to_many_projects (projectId)
+Hibernate: 
+    alter table joined_table_employee_project 
+       add constraint FKj5d897hd34d4tx0j8kvwks7yd 
+       foreign key (employee_ids) 
+       references many_to_many_employeeprojects (empId)
+Hibernate: 
+    insert 
+    into
+        many_to_many_employeeprojects
+        (empName, empId) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_many_employeeprojects
+        (empName, empId) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_many_projects
+        (projectName, projectId) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_many_projects
+        (projectName, projectId) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        joined_table_employee_project
+        (employee_ids, project_ids) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        joined_table_employee_project
+        (employee_ids, project_ids) 
+    values
+        (?, ?)
+Hibernate: 
+    insert 
+    into
+        joined_table_employee_project
+        (employee_ids, project_ids) 
+    values
+        (?, ?)
+```
+
+- Output of **joined_table_employee_project**
+
+![alt text](image-22.png) 
 
 
 
