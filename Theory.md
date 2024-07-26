@@ -622,7 +622,7 @@ Hibernate:
 
 ![alt text](image-1.png)
 
-- Now lets say we want to get rows or load rows, how to do it?, hibernate provides **get()** and **load()** method both. 
+- Now lets say we want to get rows or load rows, how to do it?, hibernate provides **get()** and **load()** method both. The get and load methods in Hibernate are used to fetch entities based on their primary key (identifier).
 
 ```
 package orm.hibernate.annotation;
@@ -669,12 +669,12 @@ public class MainMethod {
 	  Session session=ssf.openSession();
 
 	  /**
-	   * Using Get Method
+	   * Using Get Method, fetch based on primary key as its where clause
 	   */
 	  Address ad=session.get(Address.class, 1);
 	  System.out.println(ad.getAddress1()+" "+ad.getAddress2());
 	  /**
-	   * Using Load Method
+	   * Using Load Method, fetch based on primary key as its where clause
 	   */
 	  Address ad1=session.load(Address.class, 1);
 	  System.out.println(ad1.getAddress1()+" "+ad1.getAddress2());
@@ -713,13 +713,13 @@ abc xyz
 - In Hibernate, you can retrieve rows (or entities) from the database using the Session interface's load and get methods. These methods are used to fetch an entity based on its primary key. While both serve similar purposes, they have some differences in behavior:
 
 
-| Feature             | `load`                              | `get`                               |
+| Feature             | **load**                              | **get**                               |
 |---------------------|-------------------------------------|-------------------------------------|
-| Return Type         | Proxy or entity                     | Actual entity or `null`             |
+| Return Type         | Proxy or entity. The load method returns a proxy object, not the actual entity object. A proxy is a lightweight placeholder that stands in for the actual object.        | Actual entity or `null`             |
 | Database Hit        | Deferred until a property is accessed | Immediate                           |
 | Exception on Not Found | Throws `ObjectNotFoundException` | Returns `null`                      |
 | Use Case            | When the entity is expected to exist | When the entity may or may not exist |
-| Performance         | May improve performance by delaying the database hit | involves database hit if object does not exists in Session cache and return a fully object which may include several database call  |
+| Performance         | May improve performance by delaying the database hit. The actual object is only retrieved from the database when it is needed, such as when a method of the object is called or a property is accessed. This technique is known as “lazy loading” and it is used to improve the performance of Hibernate by avoiding unnecessary database queries. | involves database hit if object does not exists in Session cache and return a fully object which may include several database call  |
 
 
 - In java, one class may be dependent on another class. So in such case we need to embedded class. The `@Embedded` annotation in Hibernate is used to include an embeddable class (`@Embeddable`) into another entity. In simple terms, it means that the fields of the embedded class are treated as if they were fields of the containing entity itself, but they are logically grouped together.
@@ -2645,7 +2645,435 @@ Hibernate:
 ![alt text](image-22.png) 
 
 
+### Fetching Collections of Entities
+
+- We have seen for retrieving values we have **get** and **load**.
+- These methods control the retrieval of a specific entity by its identifier. The choice between them depends on whether you need immediate access (get) or can defer loading (load).
+- These methods provides us values from the database or session.
+- What if we kept those values whenever the entity is loaded? or when we call it? **Eager** and **Lazy** strategies determine how and when associated data (related entities or collections) is fetched.
+- Using the both strategy and get or load method work together to provide flexible and efficient data access patterns in Hibernate.
+- Eager and lazy loading strategies are indeed primarily used in the context of relational mappings in Hibernate, particularly for associations like  `@OneToOne`, `@OneToMany`, `@ManyToOne` and `@ManyToMany`.
+
+- **LAZY**
+	- This is the default FetchType in Hibernate. It means that the associated entity will be fetched only when it is accessed for the first time. This can improve performance in cases where the associated entity is not required most of the time.
+	- It can be useful if the entity has a lot of data and is not needed for every use of the parent entity.
+
+- **EAGER**
+	- This FetchType means that the associated entity will be fetched together with the main entity when the main entity is fetched from the database. This can be useful in cases where the associated entity is always required, but can also result in a performance decrease if the associated entity is large and/or has many associations itself.
+	- The FetchType.EAGER option indicates that the associated entity should be fetched eagerly, which means that it will be fetched at the same time as the parent entity.
+	- Using FetchType.EAGER can be more efficient than using FetchType.LAZY if the associated entity is needed for most uses of the parent entity, as it avoids the need for additional database queries to fetch the associated entity when it is accessed. However, it can also be less efficient if the associated entity has a lot of data and is not needed for every use of the parent entity, as it will always be fetched along with the parent entity.
+- Depending on the application fetching strategy can be opted.
+- Lets see an example of lazy type. In the `@OneToOne` we had defined two classes Personal and Payroll.
+- So here lets us define Lazy loading for Payroll class.
+
+```
+package orm.hibernate.annotation.onetoone;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name="one_to_one_personal")
+public class Personal {
+
+	@Id
+	private int empid_personal;
+	
+	@Column(unique = true)
+	private String firstname;
+	
+	private String lastname;
+	
+	/**
+	 * Default fetching type is lazy
+	 */
+	@OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="foreignkey_payroll_payrate",referencedColumnName = "payrate")
+	private Payroll personalEmployeesPayroll;
 
 
+	public int getEmpid_personal() {
+		return empid_personal;
+	}
+
+	public void setEmpid_personal(int empid_personal) {
+		this.empid_personal = empid_personal;
+	}
+
+	public String getFirstname() {
+		return firstname;
+	}
+
+	public void setFirstname(String firstname) {
+		this.firstname = firstname;
+	}
+
+	public String getLastname() {
+		return lastname;
+	}
+
+	public void setLastname(String lastname) {
+		this.lastname = lastname;
+	}
+
+	public Payroll getPersonalEmployeesPayroll() {
+		return personalEmployeesPayroll;
+	}
+
+	public void setPersonalEmployeesPayroll(Payroll personalEmployeesPayroll) {
+		this.personalEmployeesPayroll = personalEmployeesPayroll;
+	}
+
+	
+	
+}
+
+package orm.hibernate.annotation.onetoone;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name="one_to_one_payroll")
+public class Payroll {
+
+	@Id
+	private int empid_of_payroll;
+	
+	@Column(unique = true)
+	private double payrate;
+	
+	@OneToOne(mappedBy = "personalEmployeesPayroll",fetch = FetchType.LAZY)
+	private Personal personal;
 
 
+	public double getPayrate() {
+		return payrate;
+	}
+
+	public void setPayrate(double payrate) {
+		this.payrate = payrate;
+	}
+
+	public int getEmpid_of_payroll() {
+		return empid_of_payroll;
+	}
+
+	public void setEmpid_of_payroll(int empid_of_payroll) {
+		this.empid_of_payroll = empid_of_payroll;
+	}
+
+	public Personal getPersonal() {
+		return personal;
+	}
+
+	public void setPersonal(Personal personal) {
+		this.personal = personal;
+	}
+	
+	
+}
+```
+
+- Post execution of main method,
+
+```
+package orm.hibernate.annotation;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+
+import orm.hibernate.annotation.Address.formStatus;
+import orm.hibernate.annotation.manytomany.EmployeeProjects;
+import orm.hibernate.annotation.manytomany.Projects;
+import orm.hibernate.annotation.onetomany.Customer;
+import orm.hibernate.annotation.onetomany.CustomerOrder;
+import orm.hibernate.annotation.onetoone.Payroll;
+import orm.hibernate.annotation.onetoone.Personal;
+
+public class MainMethod {
+  public static void main(String[] args) {
+
+	  /**
+	   * This line creates a new instance of the Configuration class from Hibernate.
+	   * The Configuration object is used to configure Hibernate and set up its properties.
+	   */
+	  Configuration con=new Configuration();
+	  
+	  /**
+	   * This line tells the Configuration object to load the configuration settings from the file
+	   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+	   * The XML file contains important settings such as database connection details, dialect, 
+	   *  mappings, and other Hibernate configurations.
+	   */
+	  con.configure("orm/hibernate/annotation/hibernateConfig.cfg.xml");
+  
+	  /**
+	   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+	   * which are used to interact with the database. The SessionFactory is typically created once 
+	   * and used to create multiple Session instances.
+	   */
+	  SessionFactory ssf=con.buildSessionFactory();
+	  
+	  /**
+	   * Created a session
+	   */
+	  Session session=ssf.openSession();
+
+	  
+	  /**
+	   * Lazy Loading, loads Personal class entities details based on
+	   * primary keys as where clause
+	   */
+	  System.out.println("Starting the lazy loading process");
+	  Personal pvalue=session.get(Personal.class, 1);
+	  System.out.println("Queries are now formed and executed");
+	  System.out.println(pvalue.getFirstname());
+	  
+	  /**
+	   * Now when we call Payroll method, the queries will then executed and loads
+	   * the data for it
+	   */
+	  System.out.println("Now lazy loading is applied on Payroll");
+	  System.out.println(pvalue.getPersonalEmployeesPayroll().getPayrate());
+	  
+	  /**
+	   * Close the resources
+	   */
+	  
+	  session.close();
+	  
+	  
+			  
+  }
+}
+
+
+Output:
+Starting the lazy loading process
+Hibernate: select p1_0.empid_personal,p1_0.firstname,p1_0.lastname,p1_0.foreignkey_payroll_payrate from one_to_one_personal p1_0 where p1_0.empid_personal=?
+Hibernate: select p1_0.empid_of_payroll,p1_0.payrate from one_to_one_payroll p1_0 where p1_0.payrate=?
+Hibernate: select p1_0.empid_personal,p1_0.firstname,p1_0.lastname,p1_0.foreignkey_payroll_payrate from one_to_one_personal p1_0 where p1_0.foreignkey_payroll_payrate=?
+Queries are now formed and executed
+Harsh
+Now lazy loading is applied on Payroll
+1000.0
+```
+
+- Lets us see Eager strategy approach. Using Customer and CustomerOrder classes from one to many.
+
+```
+package orm.hibernate.annotation.onetomany;
+
+import java.util.List;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name="one_to_many_customer")
+public class Customer {
+
+	@Id
+	private int custId;
+	
+	private String custName;
+	
+	private String custCity;
+	
+	/**
+	 * Extra column will not be created in Customer class
+	 */
+	@OneToMany(mappedBy = "customerIdhavingMultipleOrders",fetch = FetchType.EAGER)
+	private List<CustomerOrder> allOrdersofACustomer;
+
+	public int getCustId() {
+		return custId;
+	}
+
+	public void setCustId(int custId) {
+		this.custId = custId;
+	}
+
+	public String getCustName() {
+		return custName;
+	}
+
+	public void setCustName(String custName) {
+		this.custName = custName;
+	}
+
+	public String getCustCity() {
+		return custCity;
+	}
+
+	public void setCustCity(String custCity) {
+		this.custCity = custCity;
+	}
+
+	public List<CustomerOrder> getAllOrdersofACustomer() {
+		return allOrdersofACustomer;
+	}
+
+	public void setAllOrdersofACustomer(List<CustomerOrder> allOrdersofACustomer) {
+		this.allOrdersofACustomer = allOrdersofACustomer;
+	}
+
+
+	
+}
+
+
+package orm.hibernate.annotation.onetomany;
+
+import jakarta.persistence.*;
+import orm.hibernate.annotation.onetomany.Customer;
+
+@Entity
+@Table(name="many_to_one_customerorder")
+public class CustomerOrder {
+
+	@Id
+	private int unqiueOrderCode;
+	
+	private String orderNumber;
+	
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name="foreignkey_cust_id", referencedColumnName = "custId")
+	private Customer customerIdhavingMultipleOrders ;
+
+	public int getUnqiueOrderCode() {
+		return unqiueOrderCode;
+	}
+
+	public void setUnqiueOrderCode(int unqiueOrderCode) {
+		this.unqiueOrderCode = unqiueOrderCode;
+	}
+
+	public String getOrderNumber() {
+		return orderNumber;
+	}
+
+	public void setOrderNumber(String orderNumber) {
+		this.orderNumber = orderNumber;
+	}
+
+	public Customer getCustomerIdhavingMultipleOrders() {
+		return customerIdhavingMultipleOrders;
+	}
+
+	public void setCustomerIdhavingMultipleOrders(Customer customerIdhavingMultipleOrders) {
+		this.customerIdhavingMultipleOrders = customerIdhavingMultipleOrders;
+	}
+
+	
+	
+}
+```
+
+- Post Execution of main method
+
+```
+package orm.hibernate.annotation;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+
+import orm.hibernate.annotation.Address.formStatus;
+import orm.hibernate.annotation.manytomany.EmployeeProjects;
+import orm.hibernate.annotation.manytomany.Projects;
+import orm.hibernate.annotation.onetomany.Customer;
+import orm.hibernate.annotation.onetomany.CustomerOrder;
+import orm.hibernate.annotation.onetoone.Payroll;
+import orm.hibernate.annotation.onetoone.Personal;
+
+public class MainMethod {
+  public static void main(String[] args) {
+
+	  /**
+	   * This line creates a new instance of the Configuration class from Hibernate.
+	   * The Configuration object is used to configure Hibernate and set up its properties.
+	   */
+	  Configuration con=new Configuration();
+	  
+	  /**
+	   * This line tells the Configuration object to load the configuration settings from the file
+	   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+	   * The XML file contains important settings such as database connection details, dialect, 
+	   *  mappings, and other Hibernate configurations.
+	   */
+	  con.configure("orm/hibernate/annotation/hibernateConfig.cfg.xml");
+  
+	  /**
+	   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+	   * which are used to interact with the database. The SessionFactory is typically created once 
+	   * and used to create multiple Session instances.
+	   */
+	  SessionFactory ssf=con.buildSessionFactory();
+	  
+	  /**
+	   * Created a session
+	   */
+	  Session session=ssf.openSession();
+	  
+	  /**
+	   * Eager loading
+	   */
+	  System.out.println("All data are loaded once");
+	  Customer custvalue=session.get(Customer.class, 1);
+	  
+	  
+	  /**
+	   * Close the resources
+	   */
+	  
+	  session.close();
+	  
+	  
+			  
+  }
+}
+
+Output:
+All data are loaded once
+Hibernate: 
+    select
+        c1_0.custId,
+        c1_0.custCity,
+        c1_0.custName,
+        aoa1_0.foreignkey_cust_id,
+        aoa1_0.unqiueOrderCode,
+        aoa1_0.orderNumber 
+    from
+        one_to_many_customer c1_0 
+    left join
+        many_to_one_customerorder aoa1_0 
+            on c1_0.custId=aoa1_0.foreignkey_cust_id 
+    where
+        c1_0.custId=?
+```
+
+- If we observed, eager type of fetching also did join operations and fetch the data for customer order also.

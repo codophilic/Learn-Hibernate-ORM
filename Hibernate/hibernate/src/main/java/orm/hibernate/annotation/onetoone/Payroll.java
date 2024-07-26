@@ -12,7 +12,7 @@ public class Payroll {
 	@Column(unique = true)
 	private double payrate;
 	
-	@OneToOne(mappedBy = "personalEmployeesPayroll")
+	@OneToOne(mappedBy = "personalEmployeesPayroll",fetch = FetchType.LAZY)
 	private Personal personal;
 
 

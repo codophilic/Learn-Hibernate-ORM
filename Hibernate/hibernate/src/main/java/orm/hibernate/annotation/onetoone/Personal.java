@@ -2,6 +2,7 @@ package orm.hibernate.annotation.onetoone;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -19,7 +20,10 @@ public class Personal {
 	
 	private String lastname;
 	
-	@OneToOne
+	/**
+	 * Default fetching type is lazy
+	 */
+	@OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="foreignkey_payroll_payrate",referencedColumnName = "payrate")
 	private Payroll personalEmployeesPayroll;
 

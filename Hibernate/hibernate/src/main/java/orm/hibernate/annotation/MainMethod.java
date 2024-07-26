@@ -90,13 +90,13 @@ public class MainMethod {
 	  session.save(address);
 	  
 	  /**
-	   * Using Get Method
+	   * Using Get Method, fetch based on primary key as its where clause
 	   */
 	  Address ad=session.get(Address.class, 1);
 	  System.out.println(ad.getAddress1()+" "+ad.getAddress2());
 
 	  /**
-	   * Using Load Method
+	   * Using Load Method, fetch based on primary key as its where clause
 	   */
 	  Address ad1=session.load(Address.class, 1);
 	  System.out.println(ad1.getAddress1()+" "+ad1.getAddress2());
@@ -174,7 +174,30 @@ public class MainMethod {
 	  
 	  
 	  
-	  tx.commit();
+	  tx.commit();  
+	  /**
+	   * Lazy Loading, loads Personal class entities details based on
+	   * primary keys as where clause
+	   */
+	  System.out.println("Starting the lazy loading process");
+	  Personal pvalue=session.get(Personal.class, 1);
+	  System.out.println("Queries are now formed and executed");
+	  System.out.println(pvalue.getFirstname());
+	  
+	  /**
+	   * Now when we call Payroll method, the queries will then executed and loads
+	   * the data for it
+	   */
+	  System.out.println("Now lazy loading is applied on Payroll");
+	  System.out.println(pvalue.getPersonalEmployeesPayroll().getPayrate());
+	  
+	  
+	  /**
+	   * Eager loading
+	   */
+	  System.out.println("All data are loaded once");
+	  Customer custvalue=session.get(Customer.class, 1);
+	  
 	  
 	  /**
 	   * Close the resources

@@ -12,7 +12,7 @@ public class CustomerOrder {
 	
 	private String orderNumber;
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name="foreignkey_cust_id", referencedColumnName = "custId")
 	private Customer customerIdhavingMultipleOrders ;
 
