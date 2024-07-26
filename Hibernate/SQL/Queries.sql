@@ -1,9 +1,7 @@
 select * from one_to_one_payroll;
 select * from one_to_one_personal;
 
-drop table one_to_one_personal;
-drop table one_to_one_payroll;
-
+select * from student_data;
 /**
 Force to drop tables which consist 
 foreign keys
@@ -28,3 +26,13 @@ select * from many_to_many_employeeprojects;
 select * from many_to_many_projects;
 select * from joined_table_employee_project;
 
+
+select *  from one_to_one_personal;
+select * from one_to_many_customer;
+select * from many_to_one_customerorder;
+
+
+select * from student_data;
+
+select count(*) from paginator;
+insert into paginator(idval) value("String");

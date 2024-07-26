@@ -31,7 +31,18 @@
     and again will get created. So it is better to use update over create. It will create only once if
     table does not exists.
      -->
-    <property name="hbm2ddl.auto">create</property>
+    <property name="hbm2ddl.auto">update</property>
+    
+     <!-- Second Level Cache provider configurations -->
+     <!-- by default second level cache is false -->
+    <property name="hibernate.cache.use_second_level_cache">true</property>
+    <property name="hibernate.cache.use_query_cache">true</property>
+    
+    <!-- Post enabling second level cache we need to provide provider name for second level cache -->
+    <property name="hibernate.cache.region.factory_class">
+        org.hibernate.cache.ehcache.EhCacheRegionFactory
+    </property>
+    
     <!-- mapping class="com.mcnz.jpa.examples.Player" / -->
     <mapping class="orm.hibernate.annotation.Student"/>
     <mapping class="orm.hibernate.annotation.Address"/>
@@ -42,5 +53,6 @@
     <mapping class="orm.hibernate.annotation.onetomany.CustomerOrder" />
    <mapping class="orm.hibernate.annotation.manytomany.EmployeeProjects" />
     <mapping class="orm.hibernate.annotation.manytomany.Projects" />    
+    <mapping class="orm.hibernate.hql.Paginator" />    
   </session-factory>
 </hibernate-configuration>

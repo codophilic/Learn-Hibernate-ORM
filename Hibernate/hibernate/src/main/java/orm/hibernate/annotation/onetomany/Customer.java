@@ -18,7 +18,7 @@ public class Customer {
 	/**
 	 * Extra column will not be created in Customer class
 	 */
-	@OneToMany(mappedBy = "customerIdhavingMultipleOrders",fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "customerIdhavingMultipleOrders",fetch = FetchType.EAGER,cascade = CascadeType.ALL)
 	private List<CustomerOrder> allOrdersofACustomer;
 
 	public int getCustId() {

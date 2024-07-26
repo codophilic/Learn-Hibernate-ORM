@@ -2644,6 +2644,221 @@ Hibernate:
 
 ![alt text](image-22.png) 
 
+- If we observer all the relationship between entities, we need to explicity save child entities along with parent entity to store the data. At this point since the data is less , we could repeat save operation for all the child entities.
+- What if we have large number of entities? do we need to write repeatedly? No, we have a cascade option in hibernate.
+- Lets say we consider the same example for OneToMany relationship between Customer and CustomerOrder class. Lets say we need to save 3 CustomerOrders for a customer using cascade. 
+- To do that first we need to tell hibernate that my parent class will use cascade.
+
+```
+package orm.hibernate.annotation.onetomany;
+
+import java.util.List;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name="one_to_many_customer")
+public class Customer {
+
+	@Id
+	private int custId;
+	
+	private String custName;
+	
+	private String custCity;
+	
+	/**
+	 * Extra column will not be created in Customer class
+	 */
+	@OneToMany(mappedBy = "customerIdhavingMultipleOrders",fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+	private List<CustomerOrder> allOrdersofACustomer;
+
+	public int getCustId() {
+		return custId;
+	}
+
+	public void setCustId(int custId) {
+		this.custId = custId;
+	}
+
+	public String getCustName() {
+		return custName;
+	}
+
+	public void setCustName(String custName) {
+		this.custName = custName;
+	}
+
+	public String getCustCity() {
+		return custCity;
+	}
+
+	public void setCustCity(String custCity) {
+		this.custCity = custCity;
+	}
+
+	public List<CustomerOrder> getAllOrdersofACustomer() {
+		return allOrdersofACustomer;
+	}
+
+	public void setAllOrdersofACustomer(List<CustomerOrder> allOrdersofACustomer) {
+		this.allOrdersofACustomer = allOrdersofACustomer;
+	}
+
+
+	
+}
+```
+- Lets create some entities and execute main method.
+
+```
+package orm.hibernate.annotation;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+
+import orm.hibernate.annotation.Address.formStatus;
+import orm.hibernate.annotation.manytomany.EmployeeProjects;
+import orm.hibernate.annotation.manytomany.Projects;
+import orm.hibernate.annotation.onetomany.Customer;
+import orm.hibernate.annotation.onetomany.CustomerOrder;
+import orm.hibernate.annotation.onetoone.Payroll;
+import orm.hibernate.annotation.onetoone.Personal;
+
+public class MainMethod {
+  public static void main(String[] args) {
+
+	  /**
+	   * This line creates a new instance of the Configuration class from Hibernate.
+	   * The Configuration object is used to configure Hibernate and set up its properties.
+	   */
+	  Configuration con=new Configuration();
+	  
+	  /**
+	   * This line tells the Configuration object to load the configuration settings from the file
+	   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+	   * The XML file contains important settings such as database connection details, dialect, 
+	   *  mappings, and other Hibernate configurations.
+	   */
+	  con.configure("orm/hibernate/hibernateConfig.cfg.xml");
+  
+	  /**
+	   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+	   * which are used to interact with the database. The SessionFactory is typically created once 
+	   * and used to create multiple Session instances.
+	   */
+	  SessionFactory ssf=con.buildSessionFactory();
+	  
+	  /**
+	   * Created a session
+	   */
+	  Session session=ssf.openSession();
+	  
+	  /**
+	   * Using session we created a new transaction
+	   */
+	  Transaction tx=session.beginTransaction();
+	  	  
+	  /**
+	   * Cascading
+	   */
+	  List<CustomerOrder> allOrders=new ArrayList<>();
+	  Customer cust1=new Customer();
+	  cust1.setCustId(2);
+	  cust1.setCustName("Meet");
+	  cust1.setCustCity("Mumbai");
+	  
+	  CustomerOrder custOrder3=new CustomerOrder();
+	  custOrder3.setUnqiueOrderCode(102);
+	  custOrder3.setOrderNumber("123OC");
+	  custOrder3.setCustomerIdhavingMultipleOrders(cust1);
+	  CustomerOrder custOrder4=new CustomerOrder();
+	  custOrder4.setUnqiueOrderCode(103);
+	  custOrder4.setOrderNumber("123OD");
+	  custOrder4.setCustomerIdhavingMultipleOrders(cust1);
+	  CustomerOrder custOrder5=new CustomerOrder();
+	  custOrder5.setUnqiueOrderCode(104);
+	  custOrder5.setOrderNumber("123OE");
+	  custOrder5.setCustomerIdhavingMultipleOrders(cust1);
+
+	  allOrders.add(custOrder3);
+	  allOrders.add(custOrder4);
+	  allOrders.add(custOrder5);
+	  cust1.setAllOrdersofACustomer(allOrders);
+	  session.save(cust1);
+	  /**
+	   * automatically saves the child entities for CustomerOrder
+	   */
+	  
+	  tx.commit();  
+	  
+	  
+	  /**
+	   * Close the resources
+	   */
+	  
+	  session.close();
+	  
+	  
+			  
+  }
+}
+
+Output:
+Hibernate: 
+    insert 
+    into
+        one_to_many_customer
+        (custCity, custName, custId) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_one_customerorder
+        (foreignkey_cust_id, orderNumber, unqiueOrderCode) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_one_customerorder
+        (foreignkey_cust_id, orderNumber, unqiueOrderCode) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_one_customerorder
+        (foreignkey_cust_id, orderNumber, unqiueOrderCode) 
+    values
+        (?, ?, ?)
+```
+
+![alt text](image-27.png) 
+
+![alt text](image-28.png)
+
+- If we observe the output, our parent entity got inserted once and cascade parameter automatically inserted all its child entities.
+- Cascading in Hibernate is a feature that automatically applies certain operations from a parent entity to its related child entities. It refers to the automatic persistence of related entities.
+- There are types of Cascading
+	- CascadeType.PERSIST: When the parent entity is saved, the child entities are also saved.
+	- CascadeType.MERGE: When the parent entity is merged, the child entities are also merged.
+	- CascadeType.REMOVE: When the parent entity is deleted, the child entities are also deleted.
+	- CascadeType.REFRESH: When the parent entity is refreshed, the child entities are also refreshed.
+	- CascadeType.DETACH: When the parent entity is detached from the session, the child entities are also detached.
+	- CascadeType.ALL: Applies all the above types of cascading.
+- Cascading is not applicable to standalone entities without relationships. It only makes sense in the context of relationships where one entity's lifecycle is closely tied to another's.
 
 ### Fetching Collections of Entities
 
@@ -3077,3 +3292,674 @@ Hibernate:
 ```
 
 - If we observed, eager type of fetching also did join operations and fetch the data for customer order also.
+
+### Hibernate Entity/Objects LifeCycle or Persistence LifeCycle
+- In Hibernate, we can either create a new object of an entity and store it into the database, or we can fetch the existing data of an entity from the database. These entity is connected with the lifecycle and each object of entity passes through the various stages of the lifecycle.
+- The Hibernate life cycle consists of four main states: Transient, Persistent, Detached, and Removed. Each of these states represents a specific state of an object in the Hibernate framework.
+
+1. Transient State
+	- When an object is created using the “new” keyword, it is in the transient state. The object is not associated with any Hibernate session, and no database operations are performed on it. The object is simply a plain Java object (POJO) that is not yet persisted in the database.
+	- Since we are working with hibernate, we work with sessions or object sessions. So in transient state the object is not associated with any database nor any session.
+
+![alt text](image-23.png) 
+
+```
+// Creating a new object in the transient state
+Employee employee = new Employee();
+employee.setName("John");
+employee.setAge(30);
+```
+
+2. Persistent State
+	- When an object is associated with a Hibernate session, it enters the persistent state. In this state, the object is associated with a specific Hibernate session and is actively managed by Hibernate. Any changes made to the object will be tracked by Hibernate and will be persisted to the database when the session is flushed.
+	- While an entity is in the persistent state, any changes made to it are automatically synchronized with the database at the end of the transaction or session flush.
+
+```
+Session session = sessionFactory.openSession();
+session.beginTransaction();
+session.save(student); // student is now in the persistent state
+student.setAge(26);    // The change is tracked and will be updated in the database
+session.getTransaction().commit(); 
+session.close();
+
+```
+
+![alt text](image-24.png)
+
+3. Detached State
+	- An entity becomes detached when the Hibernate session that was managing it is closed or the entity is explicitly evicted from the session. While in the detached state, the entity is no longer synchronized with the database; any changes made to it are not automatically saved.
+	- This means that the object is no longer actively managed by Hibernate, and any changes made to it will not be persisted to the database. However, the object is still a valid Java object and can be re-associated with a Hibernate session in the future.
+	- The object is saved in database but it is no longer present in session, but if we made changes again using session update method we can save the updated value.
+
+```
+// Loading an existing object into a Hibernate session
+Session session = HibernateUtil.getSessionFactory().openSession();
+Employee employee = session.get(Employee.class, 1L); 
+
+// Detaching the object from the Hibernate session
+session.evict(employee);  
+or
+session.close();
+
+// Modifying the object in the Detached state
+employee.setAge(35); 
+
+// Re-associating the object with a Hibernate session
+session.beginTransaction();
+session.update(employee);
+```
+
+![alt text](image-25.png)
+
+
+4. Removed State
+	- The removed state is a transitional phase where the entity is marked for deletion but the actual removal from the database only occurs later, typically when the transaction is committed.
+	- Basically we need to delete a row.
+
+```
+// Open a session and begin a transaction
+Session session = sessionFactory.openSession();
+session.beginTransaction();
+
+// Load an entity (e.g., a Student)
+Student student = session.get(Student.class, studentId);
+
+// Mark the entity for deletion
+session.delete(student); // Entity is now in the removed state
+
+// Commit the transaction
+session.getTransaction().commit();
+session.close();
+```
+
+![alt text](image-26.png)
+
+
+
+### HQL (Hibernate Query Language)
+
+- Hibernate Query Language (HQL) is same as SQL (Structured Query Language) but it doesn't depends on the table of the database. Instead of table name, we use class name in HQL.
+- Lets say you are migrating your database from Oracle to MySQL and you have been using HQL, do you require to do any code level changes (except configuration) ? absolutely no, because HQL is designed to be database-agnostic, meaning it doesn't rely on the specific details of the underlying database. Instead of writing SQL queries directly for a specific database (like MySQL, PostgreSQL, Oracle, etc.), you write HQL queries using the entity class names and their properties. Hibernate then translates these HQL queries into the appropriate SQL for the specific database being used.
+- **That's why HQL is database independent**.
+- Since we can switch database, the code can be easily moved and run on different systems or environments with minimal changes. This makes HQL portable.
+- Consider an example of SQL, `select * from Student where age='eighteen'`. Now if the age defined in the student table is an integer it will thrown an SQL error. 
+- Such mistakes can be avoided by HQL because it works with the Java class model, so the queries you write are checked against the entity classes you define.
+- Example, we would have Student class and an int primitive datatype defined for age variable. Now when we run HQL query it checks the type safety first before executing the SQL, it means HQL expects an integer, not a string, for the age property which will thrown an error.
+- HQL supports polymorphic queries.
+- Lets fetch some values from database using multiple where clause.
+
+```
+package orm.hibernate.hql;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.query.Query;
+
+import orm.hibernate.annotation.Student;
+
+public class MainMethod {
+
+	public static void main(String[] args) {
+		  /**
+		   * This line creates a new instance of the Configuration class from Hibernate.
+		   * The Configuration object is used to configure Hibernate and set up its properties.
+		   */
+		  Configuration con=new Configuration();
+		  
+		  /**
+		   * This line tells the Configuration object to load the configuration settings from the file
+		   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+		   * The XML file contains important settings such as database connection details, dialect, 
+		   *  mappings, and other Hibernate configurations.
+		   */
+		  con.configure("orm/hibernate/hibernateConfig.cfg.xml");
+	  
+		  /**
+		   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+		   * which are used to interact with the database. The SessionFactory is typically created once 
+		   * and used to create multiple Session instances.
+		   */
+		  SessionFactory ssf=con.buildSessionFactory();
+		  
+		  /**
+		   * Created a session
+		   */
+		  Session session=ssf.openSession();
+		  
+		  //HQL
+		  /**
+		   * When are selecting all columns , we don't need to specify SELECT key word
+		   * when are selecting few columns , we do need to specify SELECT key word
+		   * 
+		   * Here Student is my Object class name, whereas in my database
+		   * Student_data is the table created
+		   * st here is alias
+		   */
+		  String hqlQuery="from Student st where st.name=:x";
+		  
+		  Query query=session.createQuery(hqlQuery);
+		  query.setParameter("x", "Harsh");
+		  List<Student> studentList=query.list();
+		  for(Student e: studentList) {
+			  System.out.println(e.getId());
+		  }
+		  
+		  
+	}
+
+}
+
+Output:
+Hibernate: 
+    select
+        s1_0.id,
+        s1_0.city,
+        s1_0.name 
+    from
+        Student_data s1_0 
+    where
+        s1_0.name=?
+1
+```
+
+- Below are some update and delete operation example
+
+```
+package orm.hibernate.hql;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.query.Query;
+
+import orm.hibernate.annotation.Student;
+
+public class MainMethod {
+
+	public static void main(String[] args) {
+		  /**
+		   * This line creates a new instance of the Configuration class from Hibernate.
+		   * The Configuration object is used to configure Hibernate and set up its properties.
+		   */
+		  Configuration con=new Configuration();
+		  
+		  /**
+		   * This line tells the Configuration object to load the configuration settings from the file
+		   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+		   * The XML file contains important settings such as database connection details, dialect, 
+		   *  mappings, and other Hibernate configurations.
+		   */
+		  con.configure("orm/hibernate/hibernateConfig.cfg.xml");
+	  
+		  /**
+		   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+		   * which are used to interact with the database. The SessionFactory is typically created once 
+		   * and used to create multiple Session instances.
+		   */
+		  SessionFactory ssf=con.buildSessionFactory();
+		  
+		  /**
+		   * Created a session
+		   */
+		  Session session=ssf.openSession();
+		  
+		  //HQL
+		  /**
+		   * When are selecting all columns , we don't need to specify SELECT key word
+		   * when are selecting few columns , we do need to specify SELECT key word
+		   * 
+		   * Here Student is my Object class name, whereas in my database
+		   * Student_data is the table created
+		   * st here is alias
+		   */
+		  String hqlQuery="from Student st where st.name=:x";
+		  
+		  /**
+		   * Query is an interface
+		   */
+		  Query query=session.createQuery(hqlQuery);
+		  query.setParameter("x", "Harsh");
+		  List<Student> studentList=query.list();
+		  for(Student e: studentList) {
+			  System.out.println(e.getId());
+		  }
+		  
+		  
+		  /**
+		   * Update,Delete and Join operation
+		   */
+		  
+		  /**
+		   * Using session we created a new transaction
+		   */
+		  Transaction tx=session.beginTransaction();
+		  hqlQuery=" update Student set id=:n where name=:x";
+		  query=session.createQuery(hqlQuery);
+		  query.setParameter("n", 2);
+		  query.setParameter("x", "Harsh");
+		  int rowsaffected=query.executeUpdate();
+		  System.out.println("Updated Rows - "+rowsaffected);
+		  
+		  
+		  hqlQuery=" delete from Student where name=:x";
+		  query=session.createQuery(hqlQuery);
+		  query.setParameter("x", "Harsh");
+		  rowsaffected=query.executeUpdate();
+		  System.out.println("Deleted Rows - "+rowsaffected);
+		  
+		  tx.commit();
+		  session.close();
+		  
+	}
+
+}
+
+Output:
+Hibernate: 
+    select
+        s1_0.id,
+        s1_0.city,
+        s1_0.name 
+    from
+        Student_data s1_0 
+    where
+        s1_0.name=?
+2
+Hibernate: 
+    update
+        Student_data s1_0 
+    set
+        id=? 
+    where
+        s1_0.name=?
+Updated Rows - 1
+Hibernate: 
+    delete s1_0 
+    from
+        Student_data s1_0 
+    where
+        s1_0.name=?
+Deleted Rows - 1
+```
+
+- Joined Operation, is peformed on relational entities which are One-to-One, One-to-Many or Many-to-Many.
+- We have Personal class which uses 
+
+```
+package orm.hibernate.hql;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.query.Query;
+
+import orm.hibernate.annotation.Student;
+import orm.hibernate.annotation.onetoone.Personal;
+
+public class MainMethod {
+
+	public static void main(String[] args) {
+		  /**
+		   * This line creates a new instance of the Configuration class from Hibernate.
+		   * The Configuration object is used to configure Hibernate and set up its properties.
+		   */
+		  Configuration con=new Configuration();
+		  
+		  /**
+		   * This line tells the Configuration object to load the configuration settings from the file
+		   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+		   * The XML file contains important settings such as database connection details, dialect, 
+		   *  mappings, and other Hibernate configurations.
+		   */
+		  con.configure("orm/hibernate/hibernateConfig.cfg.xml");
+	  
+		  /**
+		   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+		   * which are used to interact with the database. The SessionFactory is typically created once 
+		   * and used to create multiple Session instances.
+		   */
+		  SessionFactory ssf=con.buildSessionFactory();
+		  
+		  /**
+		   * Created a session
+		   */
+		  Session session=ssf.openSession();
+		  
+		  //HQL
+		  String hqlQuery="select psl.firstname,psl.lastname,prl.payrate from Personal as psl inner join psl.personalEmployeesPayroll as prl";
+
+		  /**
+		   * In Joined Operation, here we use OneToOne mapping relation where payroll
+		   * is a part of Personal, so using Personal instance variable
+		   * we will perform join operation.
+		   * psl.personalEmployeesPayroll refers to the relationship field in the Personal entity that maps to the Payroll entity. This assumes that Personal has a property named payroll which is associated with a Payroll entity.
+		   */
+		  Query query=session.createQuery(hqlQuery);
+		  
+		  List<Object[]> joinResult=query.list();
+		  for(Object[] obj: joinResult) {
+			  System.out.println(obj[0]+" "+obj[1]+" "+obj[2]);
+		  }
+		  session.close();
+		  
+	}
+
+}
+
+Output:
+Hibernate: 
+    select
+        p1_0.firstname,
+        p1_0.lastname,
+        p1_0.foreignkey_payroll_payrate 
+    from
+        one_to_one_personal p1_0 
+    join
+        one_to_one_payroll pep1_0 
+            on pep1_0.payrate=p1_0.foreignkey_payroll_payrate
+Harsh Pandya 1000.0
+```
+
+- Lets say we wanted to fetch limited number of rows but from row number 20 or something. In HQL we have a concept of paginator for this.
+- Post execution of main method, we can see Output.
+
+```
+package orm.hibernate.hql;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.query.Query;
+
+import orm.hibernate.annotation.Student;
+import orm.hibernate.annotation.onetoone.Personal;
+
+public class MainMethod {
+
+	public static void main(String[] args) {
+		  /**
+		   * This line creates a new instance of the Configuration class from Hibernate.
+		   * The Configuration object is used to configure Hibernate and set up its properties.
+		   */
+		  Configuration con=new Configuration();
+		  
+		  /**
+		   * This line tells the Configuration object to load the configuration settings from the file
+		   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+		   * The XML file contains important settings such as database connection details, dialect, 
+		   *  mappings, and other Hibernate configurations.
+		   */
+		  con.configure("orm/hibernate/hibernateConfig.cfg.xml");
+	  
+		  /**
+		   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+		   * which are used to interact with the database. The SessionFactory is typically created once 
+		   * and used to create multiple Session instances.
+		   */
+		  SessionFactory ssf=con.buildSessionFactory();
+		  
+		  /**
+		   * Created a session
+		   */
+		  Session session=ssf.openSession();
+		  
+		  /**
+		   * Begin transaction
+		   */
+		  Transaction tx=session.beginTransaction();
+		  
+		  String hqlQuery="";
+		  Query query=null;
+		  
+		  for (int i = 1; i < 201; i++) {
+			  Paginator pg=new Paginator();
+			  pg.setIdval("value "+i);
+			  session.save(pg);
+	    	  tx.commit();
+			  tx.begin();
+	    	  /**
+	    	   * Whenever we commit, transaction gets completed
+	    	   * so we need to again start the transaction
+	    	   */
+		  }
+		  
+		  hqlQuery=" from Paginator";
+		  query=session.createQuery(hqlQuery);
+		  query.setFirstResult(100); // Starting from which row
+		  query.setMaxResults(10); // fetch 10 values
+		  
+		  List<Paginator> fetchAll=query.list();
+		  
+		  for(Paginator objf:fetchAll) {
+			  System.out.println(objf.getId());
+		  }
+		  
+		  session.close();
+		  
+		  
+	}
+
+}
+
+Output:
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+```
+
+- We can also execute normal sql queries or native queries.
+
+```
+package orm.hibernate.hql;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.query.NativeQuery;
+import org.hibernate.query.Query;
+
+import orm.hibernate.annotation.Student;
+import orm.hibernate.annotation.onetoone.Personal;
+
+public class MainMethod {
+
+	public static void main(String[] args) {
+		  /**
+		   * This line creates a new instance of the Configuration class from Hibernate.
+		   * The Configuration object is used to configure Hibernate and set up its properties.
+		   */
+		  Configuration con=new Configuration();
+		  
+		  /**
+		   * This line tells the Configuration object to load the configuration settings from the file
+		   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+		   * The XML file contains important settings such as database connection details, dialect, 
+		   *  mappings, and other Hibernate configurations.
+		   */
+		  con.configure("orm/hibernate/hibernateConfig.cfg.xml");
+	  
+		  /**
+		   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+		   * which are used to interact with the database. The SessionFactory is typically created once 
+		   * and used to create multiple Session instances.
+		   */
+		  SessionFactory ssf=con.buildSessionFactory();
+		  
+		  /**
+		   * Created a session
+		   */
+		  Session session=ssf.openSession();
+		  
+		  /**
+		   * Begin transaction
+		   */
+		  Transaction tx=session.beginTransaction();
+		  
+		  /**
+		   * Executing Native Queries
+		   */
+		  
+		  String sqlQuery="select * from one_to_one_personal";
+		  NativeQuery nq=session.createNativeQuery(sqlQuery);
+		  List<Object[]> nativeList=nq.list();
+		  for(Object[] objn:nativeList) {
+			  System.out.println(objn[0]+" "+objn[1]);
+		  }
+		  
+		  session.close();
+
+	}
+
+}
+
+Output:
+Hibernate: 
+    select
+        * 
+    from
+        one_to_one_personal
+1 1000.0
+```
+
+### Caching in Hibernate
+
+![alt text](image-29.png)
+
+- In Hibernate, caching refers to storing objects or entities in a memory-based storage, known as a cache, to reduce the number of database queries. This cached data is kept in memory, which allows Hibernate to quickly access it without querying the database again.
+- The main purpose of caching is to improve performance by minimizing the need to repeatedly fetch the same data from the database, which can be time-consuming and resource-intensive.
+- There are two levels of caching
+
+| Feature                     | First-Level Cache (Session Cache)                            | Second-Level Cache (SessionFactory Cache)                  |
+|-----------------------------|---------------------------------------------------------------|--------------------------------------------------------------|
+| **Scope**                   | Limited to a single Hibernate `Session`.                    | Shared across multiple Hibernate `Session` instances.       |
+| **Configuration**            | Automatically enabled; no configuration needed.              | Requires explicit configuration and setup.                 |
+| **Lifetime**                | Exists only during the lifecycle of the session. Won't be applicable when session is closed             | Persists across sessions and transactions.                 |
+| **Usage**                   | Caches entities within the session's scope.                  | Caches entities, collections, and query results globally.   |
+| **Memory Management**       | Managed automatically by Hibernate; cleared when session ends. | Must be managed carefully to avoid memory bloat; requires proper cache management. |
+| **Performance Impact**      | Reduces database hits within a single session, improving performance for repeated entity access. | Reduces database hits across multiple sessions, beneficial for read-heavy applications. |
+| **Cache Providers**         | Not applicable; managed internally by Hibernate.             | Can use various cache providers like EHCache, Infinispan, etc. |
+| **Consistency**             | Provides consistency within the session but not across sessions. | Requires careful management to maintain consistency across different sessions. |
+| **Typical Use Case**        | Managing entities within a single session for improved performance. | Caching frequently accessed data across sessions to reduce overall database load. |
+| **Eviction Strategy**       | Automatically cleared when the session is closed.            | Requires manual eviction policies or strategies based on cache provider settings. |
+| **Example Configuration**   | Not applicable; automatic.                                   | Example: `<property name="hibernate.cache.use_second_level_cache">true</property>` |
+
+- Let us implement first level of caching
+
+```
+package orm.hibernate.caching;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
+import orm.hibernate.annotation.Student;
+
+public class FirstLevel {
+
+	  public static void main(String[] args) {
+
+		  /**
+		   * This line creates a new instance of the Configuration class from Hibernate.
+		   * The Configuration object is used to configure Hibernate and set up its properties.
+		   */
+		  Configuration con=new Configuration();
+		  
+		  /**
+		   * This line tells the Configuration object to load the configuration settings from the file
+		   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+		   * The XML file contains important settings such as database connection details, dialect, 
+		   *  mappings, and other Hibernate configurations.
+		   */
+		  con.configure("orm/hibernate/hibernateConfig.cfg.xml");
+	  
+		  /**
+		   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+		   * which are used to interact with the database. The SessionFactory is typically created once 
+		   * and used to create multiple Session instances.
+		   */
+		  SessionFactory ssf=con.buildSessionFactory();
+		  
+		  /**
+		   * Created a session
+		   */
+		  Session session=ssf.openSession();
+		  
+		  Student st=session.get(Student.class, 1);
+		  System.out.println(st.getName());
+		  System.out.println("Performing some other operation");
+		  System.out.println("Again need to access Student class");
+		  Student st1=session.get(Student.class, 1);
+		  System.out.println(st1.getName());
+		  System.out.println("Check if the object exists in Session Object");
+		  System.out.println(session.contains(st1));
+		  
+		  session.clear();
+		  
+		  System.out.println("Closed Session");
+		  System.out.println("Check if the object exists in Session Object");
+		  System.out.println(session.contains(st1));
+	  }
+}
+
+
+Output:
+Hibernate: 
+    select
+        s1_0.id,
+        s1_0.city,
+        s1_0.name 
+    from
+        Student_data s1_0 
+    where
+        s1_0.id=?
+Harsh
+Performing some other operation
+Again need to access Student class
+Harsh
+Check if the object exists in Session Object
+true
+Closed Session
+Check if the object exists in Session Object
+false
+```
+
+- If we observe the output, hibernate query got executed once and the entity is stored in the session object. Post clearing session entity does not exist anymore.
+
+- Lets us implement second level caching using a provider name EhCache which is an open source.
+
+
+
+
+
+
+
+
+
+

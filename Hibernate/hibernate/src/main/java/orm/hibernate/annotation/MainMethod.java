@@ -36,7 +36,7 @@ public class MainMethod {
 	   * The XML file contains important settings such as database connection details, dialect, 
 	   *  mappings, and other Hibernate configurations.
 	   */
-	  con.configure("orm/hibernate/annotation/hibernateConfig.cfg.xml");
+	  con.configure("orm/hibernate/hibernateConfig.cfg.xml");
   
 	  /**
 	   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
@@ -172,7 +172,36 @@ public class MainMethod {
 	  session.save(proj1);
 	  session.save(proj2);
 	  
+	  /**
+	   * Cascading
+	   */
+	  allOrders.clear();
+	  Customer cust1=new Customer();
+	  cust1.setCustId(2);
+	  cust1.setCustName("Meet");
+	  cust1.setCustCity("Mumbai");
 	  
+	  CustomerOrder custOrder3=new CustomerOrder();
+	  custOrder3.setUnqiueOrderCode(102);
+	  custOrder3.setOrderNumber("123OC");
+	  custOrder3.setCustomerIdhavingMultipleOrders(cust1);
+	  CustomerOrder custOrder4=new CustomerOrder();
+	  custOrder4.setUnqiueOrderCode(103);
+	  custOrder4.setOrderNumber("123OD");
+	  custOrder4.setCustomerIdhavingMultipleOrders(cust1);
+	  CustomerOrder custOrder5=new CustomerOrder();
+	  custOrder5.setUnqiueOrderCode(104);
+	  custOrder5.setOrderNumber("123OE");
+	  custOrder5.setCustomerIdhavingMultipleOrders(cust1);
+
+	  allOrders.add(custOrder3);
+	  allOrders.add(custOrder4);
+	  allOrders.add(custOrder5);
+	  cust1.setAllOrdersofACustomer(allOrders);
+	  session.save(cust1);
+	  /**
+	   * automatically saves the child entities for CustomerOrder
+	   */
 	  
 	  tx.commit();  
 	  /**
