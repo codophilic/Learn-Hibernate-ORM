@@ -1836,9 +1836,229 @@ Hibernate:
 
 ![alt text](image-12.png)
 
-#### One-to-Many
+#### One-to-Many and Many-to-One
 - A one-to-many (1:N) relationship means a record in Table A can relate to zero, one, or many records in Table B. Many records in Table B can relate to one record in Table A. 
 
 ![alt text](image-7.png)
+
+- So here in this mapping, one record of a table A can have relation between 0, 1 or N records of table B. Multiple, 1 or 0 records of table B will have relationship with 1 record of table A (Many-to-One)
+- So in java we need to store in a collections like a list. So lets say we have two class Customer and Order class.
+
+```
+package orm.hibernate.annotation.onetomany;
+
+import java.util.List;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name="one_to_many_customer")
+public class Customer {
+
+	@Id
+	private int custId;
+	
+	private String custName;
+	
+	private String custCity;
+	
+	/**
+	 * Extra column will not be created in Customer class
+	 */
+	@OneToMany(mappedBy = "customerIdhavingMultipleOrders")
+	private List<CustomerOrder> allOrdersofACustomer;
+
+	public int getCustId() {
+		return custId;
+	}
+
+	public void setCustId(int custId) {
+		this.custId = custId;
+	}
+
+	public String getCustName() {
+		return custName;
+	}
+
+	public void setCustName(String custName) {
+		this.custName = custName;
+	}
+
+	public String getCustCity() {
+		return custCity;
+	}
+
+	public void setCustCity(String custCity) {
+		this.custCity = custCity;
+	}
+
+	public List<CustomerOrder> getAllOrdersofACustomer() {
+		return allOrdersofACustomer;
+	}
+
+	public void setAllOrdersofACustomer(List<CustomerOrder> allOrdersofACustomer) {
+		this.allOrdersofACustomer = allOrdersofACustomer;
+	}
+
+
+	
+}
+
+
+package orm.hibernate.annotation.onetomany;
+
+import jakarta.persistence.*;
+import orm.hibernate.annotation.onetomany.Customer;
+
+@Entity
+@Table(name="many_to_one_customerorder")
+public class CustomerOrder {
+
+	@Id
+	private int unqiueOrderCode;
+	
+	private String orderNumber;
+	
+	@ManyToOne
+	@JoinColumn(name="foreignkey_cust_id", referencedColumnName = "custId")
+	private Customer customerIdhavingMultipleOrders ;
+
+	public int getUnqiueOrderCode() {
+		return unqiueOrderCode;
+	}
+
+	public void setUnqiueOrderCode(int unqiueOrderCode) {
+		this.unqiueOrderCode = unqiueOrderCode;
+	}
+
+	public String getOrderNumber() {
+		return orderNumber;
+	}
+
+	public void setOrderNumber(String orderNumber) {
+		this.orderNumber = orderNumber;
+	}
+
+	public Customer getCustomerIdhavingMultipleOrders() {
+		return customerIdhavingMultipleOrders;
+	}
+
+	public void setCustomerIdhavingMultipleOrders(Customer customerIdhavingMultipleOrders) {
+		this.customerIdhavingMultipleOrders = customerIdhavingMultipleOrders;
+	}
+
+	
+	
+}
+```
+
+- Below is the cfg xml file details.
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration SYSTEM 
+"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<!-- Version 8 MySQL hiberante-cfg.xml example for Hibernate 5 -->
+<hibernate-configuration>
+  <session-factory>
+  <!-- Driver name -->
+    <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+    <!-- property name="connection.driver_class">com.mysql.jdbc.Driver</property -->
+    <property name="connection.url">jdbc:mysql://localhost:3306/myhibernatedb</property>
+    <!-- 
+    a "dialect" is a configuration setting that specifies the type of database you are using. 
+    It tells Hibernate how to generate the appropriate SQL statements for your particular database system,
+     as different databases have different SQL syntax, data types, and functions.
+     -->
+    <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+    <property name="connection.username">root</property>
+    <property name="connection.password">Meetpandya40@</property>
+<!--     <property name="connection.pool_size">3</property>
+ -->    <!--property name="dialect">org.hibernate.dialect.MySQLDialect</property-->
+<!--     <property name="current_session_context_class">thread</property>
+ -->    
+ 	<!-- 
+ 	show sql =  true states that whatever hibernate fires the query it will show in the console.
+ 	 -->
+    <property name="show_sql">true</property>
+    <property name="format_sql">true</property>
+    
+    <!-- 
+    When we use create , it will create table , but if existing tables are there those will get deleted
+    and again will get created. So it is better to use update over create. It will create only once if
+    table does not exists.
+     -->
+    <property name="hbm2ddl.auto">create</property>
+    <!-- mapping class="com.mcnz.jpa.examples.Player" / -->
+<!--     <mapping class="orm.hibernate.annotation.Student"/>
+    <mapping class="orm.hibernate.annotation.Address"/>
+    <mapping class="orm.hibernate.annotation.Employee"/>
+    <mapping class="orm.hibernate.annotation.onetoone.Personal" />
+    <mapping class="orm.hibernate.annotation.onetoone.Payroll" />  -->
+    <mapping class="orm.hibernate.annotation.onetomany.Customer" />
+    <mapping class="orm.hibernate.annotation.onetomany.CustomerOrder" />
+    
+  </session-factory>
+</hibernate-configuration>
+```
+
+- Post execution of main method, we can see output
+
+```
+Hibernate: 
+    create table many_to_one_customerorder (
+        foreignkey_cust_id integer,
+        unqiueOrderCode integer not null,
+        orderNumber varchar(255),
+        primary key (unqiueOrderCode)
+    ) engine=InnoDB
+Hibernate: 
+    create table one_to_many_customer (
+        custId integer not null,
+        custCity varchar(255),
+        custName varchar(255),
+        primary key (custId)
+    ) engine=InnoDB
+Hibernate: 
+    alter table many_to_one_customerorder 
+       add constraint FKqfymbg6461b6mufmeeigkkjfw 
+       foreign key (foreignkey_cust_id) 
+       references one_to_many_customer (custId)
+Hibernate: 
+    insert 
+    into
+        one_to_many_customer
+        (custCity, custName, custId) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_one_customerorder
+        (foreignkey_cust_id, orderNumber, unqiueOrderCode) 
+    values
+        (?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        many_to_one_customerorder
+        (foreignkey_cust_id, orderNumber, unqiueOrderCode) 
+    values
+        (?, ?, ?)
+```
+
+- Here, our foreign key is Customer ID for Customer Order class. This key's values are stored in Customer Order class.
+
+![alt text](image-13.png) 
+
+![alt text](image-14.png) 
+
+![alt text](image-15.png) 
+
+#### Many-To-Many
+
+
+
+
 
 

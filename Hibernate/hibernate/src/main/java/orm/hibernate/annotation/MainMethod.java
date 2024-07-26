@@ -3,7 +3,9 @@ package orm.hibernate.annotation;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -11,6 +13,8 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
 import orm.hibernate.annotation.Address.formStatus;
+import orm.hibernate.annotation.onetomany.Customer;
+import orm.hibernate.annotation.onetomany.CustomerOrder;
 import orm.hibernate.annotation.onetoone.Payroll;
 import orm.hibernate.annotation.onetoone.Personal;
 
@@ -118,6 +122,27 @@ public class MainMethod {
 	  session.save(ps);
 	  session.save(py);
 	  
+	  Customer cust=new Customer();
+	  cust.setCustId(1);
+	  cust.setCustName("Harsh");
+	  cust.setCustCity("Mumbai");
+	  
+	  CustomerOrder custOrder1=new CustomerOrder();
+	  custOrder1.setUnqiueOrderCode(100);
+	  custOrder1.setOrderNumber("123OA");
+	  CustomerOrder custOrder2=new CustomerOrder();
+
+	  custOrder2.setUnqiueOrderCode(101);
+	  custOrder2.setOrderNumber("123OB");
+	  List<CustomerOrder> allOrders=new ArrayList<>();
+	  allOrders.add(custOrder1);
+	  allOrders.add(custOrder2);
+	  cust.setAllOrdersofACustomer(allOrders);
+	  custOrder1.setCustomerIdhavingMultipleOrders(cust);
+	  custOrder2.setCustomerIdhavingMultipleOrders(cust);
+	  session.save(cust);
+	  session.save(custOrder1);
+	  session.save(custOrder2);
 	  tx.commit();
 	  
 	  /**

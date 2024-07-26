@@ -1,5 +1,7 @@
 package orm.hibernate.annotation.onetomany;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -13,6 +15,44 @@ public class Customer {
 	
 	private String custCity;
 	
-	private CustomerOrder order;
+	/**
+	 * Extra column will not be created in Customer class
+	 */
+	@OneToMany(mappedBy = "customerIdhavingMultipleOrders")
+	private List<CustomerOrder> allOrdersofACustomer;
+
+	public int getCustId() {
+		return custId;
+	}
+
+	public void setCustId(int custId) {
+		this.custId = custId;
+	}
+
+	public String getCustName() {
+		return custName;
+	}
+
+	public void setCustName(String custName) {
+		this.custName = custName;
+	}
+
+	public String getCustCity() {
+		return custCity;
+	}
+
+	public void setCustCity(String custCity) {
+		this.custCity = custCity;
+	}
+
+	public List<CustomerOrder> getAllOrdersofACustomer() {
+		return allOrdersofACustomer;
+	}
+
+	public void setAllOrdersofACustomer(List<CustomerOrder> allOrdersofACustomer) {
+		this.allOrdersofACustomer = allOrdersofACustomer;
+	}
+
+
 	
 }

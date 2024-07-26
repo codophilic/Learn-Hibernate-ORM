@@ -14,3 +14,6 @@ drop table one_to_one_personal;
 drop table one_to_one_payroll;
 SET foreign_key_checks = 1;
 
+select * from one_to_many_customer;
+select * from many_to_one_customerorder;
+
