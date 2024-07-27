@@ -52,6 +52,8 @@
 </dependency>
 ```
 
+### Annotation Based Mapping
+
 - Post dependencies are downloaded we need to define hibernation configurations. This can be done using **cfg.xml** file.
 - Below we have defined hibernate cfg file. Here we are using MySQL database.
 
@@ -4283,11 +4285,289 @@ New session created
 Harsh
 ```
 
+### XML Based Mapping
+
+- Hibernate provides us two approach, annotation based configuration or XML based configuration.
+- Lets see an example of XML based configuration.
+- Suppose we have a class of coders which is simple POJO class.
+
+```
+package orm.hibernate.xmlbasedconfig;
+
+public class Coders {
+
+	private int id;
+	private String name;
+	private float rating;
+	
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public float getRating() {
+		return rating;
+	}
+	public void setRating(float rating) {
+		this.rating = rating;
+	}
+	
+	
+}
+``` 
+
+- To define mapping of this pojo class with database table we need to create a xml file with extension as **hbm.xml**. So here we have **Coders.hbm.xml** file which has mapping between entity Coder class and database columns.
+
+```
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="orm.hibernate.xmlbasedconfig.Coders" table="coders_information">
+        <id name="id" column="coder_id">
+            <generator class="identity"/>
+        </id>
+        <property name="name" column="coder_username"/>
+        <property name="rating" column="coder_rating"/>
+    </class>
+</hibernate-mapping>
+
+```
+
+- Currently there are no tables with name coders_information
+
+![alt text](image-30.png)
+
+- So we have defined hbm file and we have created a pojo class, now lets us define hibernate configuration file.
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration SYSTEM 
+"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<!-- Version 8 MySQL hiberante-cfg.xml example for Hibernate 5 -->
+<hibernate-configuration>
+  <session-factory>
+  <!-- Driver name -->
+    <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+    <!-- property name="connection.driver_class">com.mysql.jdbc.Driver</property -->
+    <property name="connection.url">jdbc:mysql://localhost:3306/myhibernatedb</property>
+    <!-- 
+    a "dialect" is a configuration setting that specifies the type of database you are using. 
+    It tells Hibernate how to generate the appropriate SQL statements for your particular database system,
+     as different databases have different SQL syntax, data types, and functions.
+     -->
+    <property name="dialect">org.hibernate.dialect.MySQL8Dialect</property>
+    <property name="connection.username">root</property>
+    <property name="connection.password">Meetpandya40@</property>
+<!--     <property name="connection.pool_size">3</property>
+ -->    <!--property name="dialect">org.hibernate.dialect.MySQLDialect</property-->
+<!--     <property name="current_session_context_class">thread</property>
+ -->    
+ 	<!-- 
+ 	show sql =  true states that whatever hibernate fires the query it will show in the console.
+ 	 -->
+    <property name="show_sql">true</property>
+    <property name="format_sql">true</property>
+    
+    <!-- 
+    When we use create , it will create table , but if existing tables are there those will get deleted
+    and again will get created. So it is better to use update over create. It will create only once if
+    table does not exists.
+     -->
+    <property name="hbm2ddl.auto">create</property>
+    <mapping resource="orm/hibernate/xmlbasedconfig/Coders.hbm.xml" />
+    
+   </session-factory>
+</hibernate-configuration>
+```
+
+- Lets execute the main method and see.
+
+```
+package orm.hibernate.xmlbasedconfig;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+
+public class MainMethod {
+
+	  public static void main(String[] args) {
+		  /**
+		   * This line creates a new instance of the Configuration class from Hibernate.
+		   * The Configuration object is used to configure Hibernate and set up its properties.
+		   */
+		  Configuration con=new Configuration();
+		  
+		  /**
+		   * This line tells the Configuration object to load the configuration settings from the file
+		   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+		   * The XML file contains important settings such as database connection details, dialect, 
+		   *  mappings, and other Hibernate configurations.
+		   */
+		  con.configure("orm/hibernate/hibernateXmlBasedConfig.cfg.xml");
+	  
+		  /**
+		   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+		   * which are used to interact with the database. The SessionFactory is typically created once 
+		   * and used to create multiple Session instances.
+		   */
+		  SessionFactory ssf=con.buildSessionFactory();
+		  
+		  /**
+		   * Created a session
+		   */
+		  Session session=ssf.openSession();
+		  
+		  Transaction tx=session.beginTransaction();
+				  
+		  
+		  Coders code=new Coders();
+		  code.setId(1);
+		  code.setName("Harsh");
+		  code.setRating(7);
+		  
+		  session.save(code);
+		  tx.commit();
+		  session.close();
+		
+		  
+	  }
+}
 
 
+Output:
+Hibernate: 
+    
+    create table coders_information (
+       coder_id integer not null auto_increment,
+        coder_username varchar(255),
+        coder_rating float,
+        primary key (coder_id)
+    ) engine=InnoDB
+Hibernate: 
+    insert 
+    into
+        coders_information
+        (coder_username, coder_rating) 
+    values
+        (?, ?)
+```
+
+- Below is the table output.
+
+![alt text](image-31.png) 
+
+- Similarly in annotation we have defined several annotations , the same things is also provided by XML based mapping. Below are some examples.
+
+	- `<hibernate-mapping>`: The root element in a Hibernate XML mapping file.
+	- `<class>`: Maps a Java class to a database table. Annotation: @Entity, @Table
+	- `<id>`: Maps the primary key property of the entity. Annotation: @Id, @GeneratedValue
+	- `<property>`: Maps a simple property (field) of the entity to a column in the table. Annotation: @Column
+	- `<many-to-one>`: Maps a many-to-one relationship between two entities. Annotation: @ManyToOne
+	- `<one-to-many>`: Maps a one-to-many relationship between two entities. Annotation: @OneToMany
+	- `<many-to-many>`: Maps a many-to-many relationship between two entities. Annotation: @ManyToMany
+	- `<one-to-one>`: Maps a one-to-one relationship between two entities. Annotation: @OneToOne
+	- `<component>`: Maps a component (embedded) class, which is a class with no identity of its own. Annotation: @Embeddable, @Embedded
+	- `<join>`: Maps a secondary table or join to the main entity's table. Annotation: @SecondaryTable, @PrimaryKeyJoinColumn
+	- `<key>`: Specifies the foreign key column in a collection mapping. Annotation: @JoinColumn (used in various collection mappings)
+	- `<generator>`: Defines the strategy for generating primary key values. Annotation: @GeneratedValue
 
 
+### When to use XML and Annotation?
 
+- New Projects: Annotation-based mapping is generally preferred due to its simplicity and ease of maintenance.   
+- Legacy Systems: If you're working with an existing XML-based project, it might be more practical to continue using XML to avoid extensive refactoring.
+- Complex Mappings: For extremely complex mappings, XML-based mapping can offer more flexibility and control.
+- Team Preferences: Consider the preferences and expertise of your team members when making a decision.
+
+### Criteria API
+
+- The XML and annotation-based approaches in Hibernate are primarily concerned with mapping Java classes to database tables and defining the relationships between them. On the other hand, HQL (Hibernate Query Language) and the Criteria API are tools provided by Hibernate for performing database operations like querying, updating, and deleting data.
+- Criteria API is an object-oriented API provided by Hibernate for constructing database queries dynamically. It offers a type-safe and flexible way to build complex queries without writing raw SQL or HQL strings.
+- Lets see an example, we have already define a class Paginator earlier which has around 200 rows. We want to retrieve values from it having some where clause and only specific column.
+
+```
+package orm.hibernate.criteria;
+
+import java.util.List;
+
+import org.hibernate.Criteria;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+
+import orm.hibernate.hql.Paginator;
+
+public class MainMethod {
+
+	public static void main(String[] args) {
+        // Get SessionFactory (Assuming you have a configured SessionFactory)
+        SessionFactory sessionFactory = new Configuration().configure("orm/hibernate/hibernateConfig.cfg.xml").buildSessionFactory();
+        Session session = sessionFactory.openSession();
+
+        try {
+            // Create a Criteria instance
+            Criteria criteria = session.createCriteria(Paginator.class);
+
+            // Add restrictions
+            criteria.add(Restrictions.gt("id", 10)); // Id greater than 30000
+            criteria.add(Restrictions.ilike("idval", "%value%")); //idval like '%value%'
+            // Add projections
+            criteria.setProjection(Projections.projectionList()
+                    .add(Projections.sum("id"), "sumOfId")); // sum(id)
+
+            // Execute the query
+            Object results = criteria.uniqueResult();
+            System.out.println("Sum of IDs - "+results);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
+	}
+
+}
+
+
+Output:
+Hibernate: 
+    select
+        sum(this_.id) as y0_ 
+    from
+        Paginator this_ 
+    where
+        this_.id>? 
+        and lower(this_.idval) like ?
+Sum of IDs - 20246
+```
+
+- If you see, we have not written any queries, criteria api provides us in-build methods.
+- Restrictions are used in the Criteria API to specify the conditions (or filters) that must be met for a query result. They allow you to define criteria such as "equal to," "greater than," "like," etc., to filter the data retrieved from the database.
+
+- Projections are used to specify which columns or expressions should be selected in the query result. They allow you to select specific fields rather than entire entities, perform aggregate functions like count or sum, and create more customized query outputs.
+
+#### How does it differ from HQL?
+- Nature: HQL is a string-based query language similar to SQL, while Criteria API is an object-oriented API.
+- Type Safety: Criteria API provides compile-time type safety, reducing the risk of runtime errors. HQL, being string-based, lacks this advantage. - Flexibility: Criteria API is more flexible for dynamic query building as it allows you to construct queries programmatically. HQL is better suited for static queries.   
+- Performance: Generally, HQL is considered slightly faster than Criteria API due to its direct translation to SQL. However, the performance difference is often negligible in most real-world applications.
+
+#### Why use Criteria API?
+- Type Safety: Prevents runtime errors caused by incorrect property names or data types.   
+- Flexibility: Ideal for dynamic query building based on user input or runtime conditions.   
+- Readability: Can improve code readability compared to complex HQL strings.
+- Object-Oriented Approach: Aligns better with Java's object-oriented paradigm.
 
 
 

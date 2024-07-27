@@ -107,7 +107,7 @@ public class MainMethod {
 		  for(Object[] obj: joinResult) {
 			  System.out.println(obj[0]+" "+obj[1]+" "+obj[2]);
 		  }
-		  
+		  tx.begin();
 		  for (int i = 1; i < 201; i++) {
 			  Paginator pg=new Paginator();
 			  pg.setIdval("value "+i);

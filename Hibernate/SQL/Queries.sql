@@ -35,4 +35,5 @@ select * from many_to_one_customerorder;
 select * from employee;
 
 select count(*) from paginator;
-insert into paginator(idval) value("String");
+
+
