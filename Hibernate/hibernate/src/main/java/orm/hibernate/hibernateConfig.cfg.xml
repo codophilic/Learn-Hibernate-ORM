@@ -36,6 +36,8 @@
      <!-- Second Level Cache provider configurations -->
      <!-- by default second level cache is false -->
     <property name="hibernate.cache.use_second_level_cache">true</property>
+    
+    <!-- second level cache enable for query -->
     <property name="hibernate.cache.use_query_cache">true</property>
     
     <!-- Post enabling second level cache we need to provide provider name for second level cache -->

@@ -3,7 +3,7 @@ package orm.hibernate.annotation;
 import java.util.Arrays;
 import java.util.Date;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 /**
  * By specify entity annotation with name , hibernate will create table (if it not exists) by

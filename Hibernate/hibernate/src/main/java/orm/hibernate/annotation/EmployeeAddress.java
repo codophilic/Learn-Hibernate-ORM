@@ -1,6 +1,6 @@
 package orm.hibernate.annotation;
 
-import jakarta.persistence.Embeddable;
+import javax.persistence.Embeddable;
 
 @Embeddable
 public class EmployeeAddress {

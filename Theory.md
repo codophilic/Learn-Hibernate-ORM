@@ -3951,9 +3951,337 @@ false
 ```
 
 - If we observe the output, hibernate query got executed once and the entity is stored in the session object. Post clearing session entity does not exist anymore.
+- Lets us implement second level caching using a provider name EhCache (Easy Hibernate Cache) which is an open source. So before implementing we need to tell hibernate that we also want second level of caching. To do this we need to do some configuration in cfg xml.
 
-- Lets us implement second level caching using a provider name EhCache which is an open source.
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration SYSTEM 
+"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<!-- Version 8 MySQL hiberante-cfg.xml example for Hibernate 5 -->
+<hibernate-configuration>
+  <session-factory>
+  <!-- Driver name -->
+    <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+    <!-- property name="connection.driver_class">com.mysql.jdbc.Driver</property -->
+    <property name="connection.url">jdbc:mysql://localhost:3306/myhibernatedb</property>
+    <!-- 
+    a "dialect" is a configuration setting that specifies the type of database you are using. 
+    It tells Hibernate how to generate the appropriate SQL statements for your particular database system,
+     as different databases have different SQL syntax, data types, and functions.
+     -->
+    <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+    <property name="connection.username">root</property>
+    <property name="connection.password">Meetpandya40@</property>
+<!--     <property name="connection.pool_size">3</property>
+ -->    <!--property name="dialect">org.hibernate.dialect.MySQLDialect</property-->
+<!--     <property name="current_session_context_class">thread</property>
+ -->    
+ 	<!-- 
+ 	show sql =  true states that whatever hibernate fires the query it will show in the console.
+ 	 -->
+    <property name="show_sql">true</property>
+    <property name="format_sql">true</property>
+    
+    <!-- 
+    When we use create , it will create table , but if existing tables are there those will get deleted
+    and again will get created. So it is better to use update over create. It will create only once if
+    table does not exists.
+     -->
+    <property name="hbm2ddl.auto">update</property>
+    
+     <!-- Second Level Cache provider configurations -->
+     <!-- by default second level cache is false -->
+    <property name="hibernate.cache.use_second_level_cache">true</property>
+    
+    <!-- Post enabling second level cache we need to provide provider name for second level cache -->
+    <property name="hibernate.cache.region.factory_class">
+        org.hibernate.cache.ehcache.EhCacheRegionFactory
+    </property>
+    
+    <!-- mapping class="com.mcnz.jpa.examples.Player" / -->
+    <mapping class="orm.hibernate.annotation.Student"/>
+    <mapping class="orm.hibernate.annotation.Address"/>
+    <mapping class="orm.hibernate.annotation.Employee"/>
+    <mapping class="orm.hibernate.annotation.onetoone.Personal" />
+    <mapping class="orm.hibernate.annotation.onetoone.Payroll" /> 
+     <mapping class="orm.hibernate.annotation.onetomany.Customer" />
+    <mapping class="orm.hibernate.annotation.onetomany.CustomerOrder" />
+   <mapping class="orm.hibernate.annotation.manytomany.EmployeeProjects" />
+    <mapping class="orm.hibernate.annotation.manytomany.Projects" />    
+    <mapping class="orm.hibernate.hql.Paginator" />    
+  </session-factory>
+</hibernate-configuration>
+```
+- **Ensure that the hibernate-core version and hibernate-ehcache version are same**.
 
+```
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-core</artifactId>
+    <version>5.6.5.Final</version>
+</dependency>
+
+
+<!-- https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
+<dependency>
+    <groupId>com.mysql</groupId>
+    <artifactId>mysql-connector-j</artifactId>
+    <version>8.0.33</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-ehcache -->
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-ehcache</artifactId>
+    <version>5.6.5.Final</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/net.sf.ehcache/ehcache -->
+<dependency>
+    <groupId>net.sf.ehcache</groupId>
+    <artifactId>ehcache</artifactId>
+    <version>2.10.9.2</version>
+</dependency>
+```
+
+- Here we have enabled second level of caching and told hibernate the second level cache will be done by EhCache. Now by default not all entities are applicable for second level of caching, we need to explicity mentioned that the particular entity will be applicable for second level of caching, which is done by `@@Cacheable` and `@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)`. 
+
+```
+package orm.hibernate.annotation;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
+import javax.persistence.Cacheable;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+/**
+ * Applicable for second level of caching,
+ * READ_WRITE states that this entity will be having
+ * read as well as write operation.
+ */
+@Entity
+@Table(name="Student_data")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class Student {
+	
+	@Id
+	private int id;
+	
+	private String name;
+	private String city;
+	
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getCity() {
+		return city;
+	}
+	public void setCity(String city) {
+		this.city = city;
+	}
+	
+	@Override
+	public String toString() {
+		return "Student [id=" + id + ", name=" + name + ", city=" + city + "]";
+	}
+	
+	
+	
+}
+```
+
+- Post execution of main method, we can see the output.
+
+```
+package orm.hibernate.caching;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
+import orm.hibernate.annotation.Student;
+
+public class SecondLevel {
+
+
+	  public static void main(String[] args) {
+
+		  /**
+		   * This line creates a new instance of the Configuration class from Hibernate.
+		   * The Configuration object is used to configure Hibernate and set up its properties.
+		   */
+		  Configuration con=new Configuration();
+		  
+		  /**
+		   * This line tells the Configuration object to load the configuration settings from the file
+		   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+		   * The XML file contains important settings such as database connection details, dialect, 
+		   *  mappings, and other Hibernate configurations.
+		   */
+		  con.configure("orm/hibernate/hibernateConfig.cfg.xml");
+	  
+		  /**
+		   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+		   * which are used to interact with the database. The SessionFactory is typically created once 
+		   * and used to create multiple Session instances.
+		   */
+		  SessionFactory ssf=con.buildSessionFactory();
+		  
+		  /**
+		   * Created 2 sessions
+		   */
+		  System.out.println("Created Session 1");
+		  Session session1=ssf.openSession();
+		  
+		  /** 
+		   * Executed query in session1 
+		   */
+		  Student st=session1.get(Student.class, 1);
+		  
+		  System.out.println(st.getName());
+		  System.out.println("Shared arcoss multiple sessions");
+		  session1.close();
+		  System.out.println("Closed Session 1");
+		  System.out.println("Created Session 2");
+		  Session session2=ssf.openSession();
+		  Student st2=session2.get(Student.class, 1);
+		  System.out.println("Query not again got executed we retrieve values from cache");
+		  System.out.println(st2.getName());
+
+	  }
+
+}
+
+Output:
+Created Session 1
+Hibernate: 
+    select
+        student0_.id as id1_10_0_,
+        student0_.city as city2_10_0_,
+        student0_.name as name3_10_0_ 
+    from
+        Student_data student0_ 
+    where
+        student0_.id=?
+Harsh
+Shared arcoss multiple sessions
+Closed Session 1
+Created Session 2
+Query not again got executed we retrieve values from cache
+Harsh
+```
+
+- Here once session is created the data is shared between multiple session and we were able to retrieve the values.
+- Lets see how HQL second level cache can be done using `Query`. To do it we need to add one more configuration.
+
+```
+    
+    <!-- second level cache enable for query -->
+    <property name="hibernate.cache.use_query_cache">true</property>
+    
+```
+
+- Lets execute the main method and see.
+
+```
+package orm.hibernate.caching;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.query.Query;
+
+import orm.hibernate.annotation.Student;
+
+public class SecondLevel {
+
+
+	  public static void main(String[] args) {
+
+		  /**
+		   * This line creates a new instance of the Configuration class from Hibernate.
+		   * The Configuration object is used to configure Hibernate and set up its properties.
+		   */
+		  Configuration con=new Configuration();
+		  
+		  /**
+		   * This line tells the Configuration object to load the configuration settings from the file
+		   *  hibernateConfig.cfg.xml, located in the orm/hibernate directory.
+		   * The XML file contains important settings such as database connection details, dialect, 
+		   *  mappings, and other Hibernate configurations.
+		   */
+		  con.configure("orm/hibernate/hibernateConfig.cfg.xml");
+	  
+		  /**
+		   * The SessionFactory is a crucial object in Hibernate. It is a factory for Session objects, 
+		   * which are used to interact with the database. The SessionFactory is typically created once 
+		   * and used to create multiple Session instances.
+		   */
+		  SessionFactory ssf=con.buildSessionFactory();
+
+		  
+		  System.out.println("New session created");
+		  String hqlQuery="from Student where id=1";
+		  Session session=ssf.openSession();
+		  Query q1=session.createQuery(hqlQuery);
+		  
+		  /**
+		   * First time we are storing value in the cache 
+		   */
+		  q1.setCacheable(true);
+		  Student st3=(Student) q1.uniqueResult();
+		  System.out.println(st3.getName());
+		  System.out.println("Shared between multiple sessions");
+		  session.close();
+		  
+		  
+		  System.out.println("Session closed");
+		  System.out.println("New session created");
+		  Session session3=ssf.openSession();
+		  Query q2=session3.createQuery(hqlQuery);
+		  
+		  /**
+		   * Second time we are fetching value from the cache 
+		   */
+		  q2.setCacheable(true);
+		  Student st4=(Student) q2.uniqueResult();
+		  System.out.println(st4.getName());
+
+	  }
+
+}
+
+
+Output:
+New session created
+Hibernate: 
+    select
+        student0_.id as id1_10_,
+        student0_.city as city2_10_,
+        student0_.name as name3_10_ 
+    from
+        Student_data student0_ 
+    where
+        student0_.id=1
+Harsh
+Shared between multiple sessions
+Session closed
+New session created
+Harsh
+```
 
 
 

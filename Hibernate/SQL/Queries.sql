@@ -32,7 +32,7 @@ select * from one_to_many_customer;
 select * from many_to_one_customerorder;
 
 
-select * from student_data;
+select * from employee;
 
 select count(*) from paginator;
 insert into paginator(idval) value("String");

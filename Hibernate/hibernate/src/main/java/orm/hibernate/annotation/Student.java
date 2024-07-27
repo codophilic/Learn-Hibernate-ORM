@@ -3,11 +3,16 @@ package orm.hibernate.annotation;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import jakarta.persistence.Cacheable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import javax.persistence.Cacheable;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
+/**
+ * Applicable for second level of caching,
+ * READ_WRITE states that this entity will be having
+ * read as well as write operation.
+ */
 @Entity
 @Table(name="Student_data")
 @Cacheable

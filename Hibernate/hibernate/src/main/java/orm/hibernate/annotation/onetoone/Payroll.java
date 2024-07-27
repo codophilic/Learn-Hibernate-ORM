@@ -1,6 +1,6 @@
 package orm.hibernate.annotation.onetoone;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Entity
 @Table(name="one_to_one_payroll")

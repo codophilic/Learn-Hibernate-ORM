@@ -2,7 +2,7 @@ package orm.hibernate.annotation.manytomany;
 
 import java.util.List;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "many_to_many_employeeprojects")

@@ -2,7 +2,7 @@ package orm.hibernate.annotation.onetomany;
 
 import java.util.List;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Entity
 @Table(name="one_to_many_customer")

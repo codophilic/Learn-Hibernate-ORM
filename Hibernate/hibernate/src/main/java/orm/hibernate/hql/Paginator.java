@@ -1,7 +1,7 @@
 package orm.hibernate.hql;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.*;
 
 @Entity
 public class Paginator {

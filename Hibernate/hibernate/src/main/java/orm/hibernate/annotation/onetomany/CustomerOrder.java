@@ -1,6 +1,6 @@
 package orm.hibernate.annotation.onetomany;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 import orm.hibernate.annotation.onetomany.Customer;
 
 @Entity

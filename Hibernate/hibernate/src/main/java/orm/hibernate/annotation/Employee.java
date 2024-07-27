@@ -1,6 +1,6 @@
 package orm.hibernate.annotation;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Entity
 public class Employee {
