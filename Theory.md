@@ -326,7 +326,7 @@ Hibernate:
 
 - Post execution of main method, we can see a new table is created and a value is insert.
 
-![alt text](image1.png)
+![alt text](Images/image1.png)
 
 - Some commonly used annotations are listed below
 1. `@Entity`: Marks the class as a Hibernate entity, mapping it to a database table.
@@ -622,7 +622,7 @@ Hibernate:
         (?, ?, ?, ?, ?)
 ```
 
-![alt text](image-1.png)
+![alt text](Images/image-1.png)
 
 - Now lets say we want to get rows or load rows, how to do it?, hibernate provides **get()** and **load()** method both. The get and load methods in Hibernate are used to fetch entities based on their primary key (identifier).
 
@@ -929,7 +929,7 @@ Hibernate:
     values
         (?, ?, ?, ?)
 ```
-![alt text](image-2.png)
+![alt text](Images/image-2.png)
 
 - Here upto we have seen all operations for a single table, lets say when we want to work with multiple tables which has relationship with each other, how shall we use hibernate over there?
 - There are three types of relationships between the data you are likely to encounter at this stage in the design: one-to-one, one-to-many, and many-to-many.
@@ -937,7 +937,7 @@ Hibernate:
 #### One-to-One
 - A one-to-one (1:1) relationship means that each record in Table A relates to one, and only one, record in Table B, and each record in Table B relates to one, and only one, record in Table A. Look at the following example of tables from a company's Employees database:
 
-![alt text](image-3.png)
+![alt text](Images/image-3.png)
 
 - So EmployeeID of Personal table is primary key which acts like a foreign key for Payroll table which established relationship between these two tables.
 - In hibernate, we have `@OneToOne` annotation to achieve this. Lets say we have a class of Personal and Payroll.
@@ -1261,11 +1261,11 @@ Hibernate:
 - On same grounds, in table Payroll we will have a foreign key column with name `personal_empid_personal`.
 - **one_to_one_payroll** table.
 
-![alt text](image-4.png)
+![alt text](Images/image-4.png)
 
 - **one_to_one_personal** table.
 
-![alt text](image-5.png)
+![alt text](Images/image-5.png)
 
 - What if instead of using primary key of another class, can we define another column as foreign key for Personal class? yes, it is possible using `@JoinedColumn`. 
 - Using `@JoinedColumn` does not suffice the foreign key, we need to ensure that the column is atleast unique or primary key.
@@ -1550,15 +1550,15 @@ Hibernate:
 - If we see `payroll_payrate` and `personal_firstname` name columns are created in Personal and Payroll tables resp. Lets verify this.
 - Payroll table (**one_to_one_payroll**)
 
-![alt text](image-6.png) 
+![alt text](Images/image-6.png) 
 
-![alt text](image-9.png)
+![alt text](Images/image-9.png)
 
 - Personal table (**one_to_one_personal**)
 
-![alt text](image-8.png) 
+![alt text](Images/image-8.png) 
 
-![alt text](image-10.png) 
+![alt text](Images/image-10.png) 
 
 - Hold on, in the output we can observe that hibernate executes some alter statements before dropping the tables. This is due to those tables may consist of foreign keys.
 - Foreign key constraints enforce referential integrity by ensuring that a value in a child table corresponds to a valid entry in a parent table. These constraints create a dependency between the tables involved. When you try to drop a table that is referenced by a foreign key, the database prevents the operation if the constraint is still in place, as this would violate referential integrity.
@@ -1832,16 +1832,16 @@ Hibernate:
 
 - Payroll table
 
-![alt text](image-11.png) 
+![alt text](Images/image-11.png) 
 
 - Personal table
 
-![alt text](image-12.png)
+![alt text](Images/image-12.png)
 
 #### One-to-Many and Many-to-One
 - A one-to-many (1:N) relationship means a record in Table A can relate to zero, one, or many records in Table B. Many records in Table B can relate to one record in Table A. 
 
-![alt text](image-7.png)
+![alt text](Images/image-7.png)
 
 - So here in this mapping, one record of a table A can have relation between 0, 1 or N records of table B. Multiple, 1 or 0 records of table B will have relationship with 1 record of table A (Many-to-One)
 - So in java we need to store in a collections like a list. So lets say we have two class Customer and Order class.
@@ -2051,19 +2051,19 @@ Hibernate:
 
 - Here, our foreign key is Customer ID for Customer Order class. This key's values are stored in Customer Order class.
 
-![alt text](image-13.png) 
+![alt text](Images/image-13.png) 
 
-![alt text](image-14.png) 
+![alt text](Images/image-14.png) 
 
-![alt text](image-15.png) 
+![alt text](Images/image-15.png) 
 
 #### Many-To-Many
 - In a relational database, a many-to-many relationship between two tables is not supported directly. Instead, it is handled by creating a junction (or join) table that stores foreign keys referencing the primary keys of the two related tables.
 - In a many-to-many relationship, each record in Table A can be related to multiple records in Table B, and each record in Table B can be related to multiple records in Table A. To manage this relationship in an RDBMS, a junction table is used.
 
-![alt text](image-16.png) 
+![alt text](Images/image-16.png) 
 
-![alt text](image-17.png) 
+![alt text](Images/image-17.png) 
 
 - An intersection table and two one-to-many relationships
 - This forms two one-to-many relationships; each employee can work on many projects and many employees can work on a single project.
@@ -2441,19 +2441,19 @@ Hibernate:
 - Below are the data details for all 4 of the tables.
 - Table: many_to_many_employeeprojects
 
-![alt text](image-18.png)
+![alt text](Images/image-18.png)
 
 - Table: many_to_many_projects
 
-![alt text](image-19.png) 
+![alt text](Images/image-19.png) 
 
 - Table: many_to_many_employeeprojects_many_to_many_projects, it consist of two foreign keys.
 
-![alt text](image-20.png) 
+![alt text](Images/image-20.png) 
 
 - Table: many_to_many_projects_many_to_many_employeeprojects, it also consist of two foreign keys.
 
-![alt text](image-21.png)
+![alt text](Images/image-21.png)
 
 - Lets normalize the DB by removing **many_to_many_projects_many_to_many_employeeprojects** table. Table **many_to_many_employeeprojects_many_to_many_projects** can be used for references for all sort of relations.
 - Also lets give the join table and its columns a custom name.
@@ -2644,7 +2644,7 @@ Hibernate:
 
 - Output of **joined_table_employee_project**
 
-![alt text](image-22.png) 
+![alt text](Images/image-22.png) 
 
 - If we observer all the relationship between entities, we need to explicity save child entities along with parent entity to store the data. At this point since the data is less , we could repeat save operation for all the child entities.
 - What if we have large number of entities? do we need to write repeatedly? No, we have a cascade option in hibernate.
@@ -2847,9 +2847,9 @@ Hibernate:
         (?, ?, ?)
 ```
 
-![alt text](image-27.png) 
+![alt text](Images/image-27.png) 
 
-![alt text](image-28.png)
+![alt text](Images/image-28.png)
 
 - If we observe the output, our parent entity got inserted once and cascade parameter automatically inserted all its child entities.
 - Cascading in Hibernate is a feature that automatically applies certain operations from a parent entity to its related child entities. It refers to the automatic persistence of related entities.
@@ -3303,7 +3303,7 @@ Hibernate:
 	- When an object is created using the “new” keyword, it is in the transient state. The object is not associated with any Hibernate session, and no database operations are performed on it. The object is simply a plain Java object (POJO) that is not yet persisted in the database.
 	- Since we are working with hibernate, we work with sessions or object sessions. So in transient state the object is not associated with any database nor any session.
 
-![alt text](image-23.png) 
+![alt text](Images/image-23.png) 
 
 ```
 // Creating a new object in the transient state
@@ -3326,7 +3326,7 @@ session.close();
 
 ```
 
-![alt text](image-24.png)
+![alt text](Images/image-24.png)
 
 3. Detached State
 	- An entity becomes detached when the Hibernate session that was managing it is closed or the entity is explicitly evicted from the session. While in the detached state, the entity is no longer synchronized with the database; any changes made to it are not automatically saved.
@@ -3351,7 +3351,7 @@ session.beginTransaction();
 session.update(employee);
 ```
 
-![alt text](image-25.png)
+![alt text](Images/image-25.png)
 
 
 4. Removed State
@@ -3374,7 +3374,7 @@ session.getTransaction().commit();
 session.close();
 ```
 
-![alt text](image-26.png)
+![alt text](Images/image-26.png)
 
 
 
@@ -3852,7 +3852,7 @@ Hibernate:
 
 ### Caching in Hibernate
 
-![alt text](image-29.png)
+![alt text](Images/image-29.png)
 
 - In Hibernate, caching refers to storing objects or entities in a memory-based storage, known as a cache, to reduce the number of database queries. This cached data is kept in memory, which allows Hibernate to quickly access it without querying the database again.
 - The main purpose of caching is to improve performance by minimizing the need to repeatedly fetch the same data from the database, which can be time-consuming and resource-intensive.
@@ -4344,7 +4344,7 @@ public class Coders {
 
 - Currently there are no tables with name coders_information
 
-![alt text](image-30.png)
+![alt text](Images/image-30.png)
 
 - So we have defined hbm file and we have created a pojo class, now lets us define hibernate configuration file.
 
@@ -4465,7 +4465,7 @@ Hibernate:
 
 - Below is the table output.
 
-![alt text](image-31.png) 
+![alt text](Images/image-31.png) 
 
 - Similarly in annotation we have defined several annotations , the same things is also provided by XML based mapping. Below are some examples.
 
@@ -4569,5 +4569,117 @@ Sum of IDs - 20246
 - Readability: Can improve code readability compared to complex HQL strings.
 - Object-Oriented Approach: Aligns better with Java's object-oriented paradigm.
 
+## JPA (Java Persistence API)
+- What is you have implemented hibernate tool for relational mapping between class and databases, but now you need to migrate it to different tool like toplink or other? this migration will cause code issue as you will be moving to a different tool?.
+- When a project uses a specific ORM tool like Hibernate, TopLink, or EclipseLink directly, it tightly couples the codebase to that tool's specific APIs and features. This coupling can lead to challenges in several areas:
+	- Vendor Lock-in: The project becomes dependent on the specific ORM implementation. If you decide to switch to another ORM tool, it can require significant changes in the codebase, especially in the areas involving configuration, queries, and specific ORM features.
+	- Code Incompatibility: Each ORM tool may have its own specific methods, configurations, and query languages. For example, while Hibernate uses HQL, TopLink may have different mechanisms for querying and managing entities. This discrepancy can lead to compatibility issues during migration.
+	- Effort and Cost of Migration: Migrating from one ORM tool to another can be costly and time-consuming, involving rewriting and retesting substantial portions of the codebase.
+- To address these issues, the Java Community Process (JCP) introduced the Java Persistence API (JPA) as a standard specification.
+- Every ORM tool implements this standard specification JPA.
+- By following the JPA specification, developers can write code that is portable across different JPA-compliant implementations. This reduces the risk of vendor lock-in and makes it easier to switch from one ORM provider to another if needed.
+- By adhering to the JPA specification, developers can write ORM-independent code, making their applications more flexible and easier to maintain over time. This is particularly valuable in large, long-term projects where the choice of ORM tool may need to change due to performance considerations, licensing, or other factors.
+- In above hibernate learnings we used `javax.persistence` package. `javax.persistence` is the package that contains the JPA (Java Persistence API) interfaces and annotations. This package provides the standard set of tools and components for defining and managing the persistence of Java objects in relational databases.
+- The `javax.persistence` package is part of the Java EE (Enterprise Edition) and Jakarta EE specifications, providing a standardized way to handle ORM in Java applications. When you use JPA with a specific implementation (such as Hibernate, EclipseLink, etc.).
+- Hibernate is a popular implementation of the JPA specification but also offers additional features and capabilities beyond JPA.
+- So it is like JPA provides a standardized way to map Java classes to relational database tables, defining how objects and their relationships are persisted. It includes using annotations like `@Entity`, `@Table`, `@Id`, etc., to define the structure of entities and their relationships. Whereas hibernate implements JPA , uses it annotations and top on it provides us database related operations to do using it.
+- Lets us see how we can fetch values using JPA and hibernate, but not using hibernate methods. First we need to create a configuraion xml to work with JPA which should be in **src/main/resources/META-INF/** folder.
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
 
 
+<persistence version="2.1"
+             xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+    
+    <!-- Persistence name -->
+    <persistence-unit name="jpapersistencefile">
+
+        <properties>
+           <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
+           <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/myhibernatedb"/>
+           <property name="javax.persistence.jdbc.user" value="root"/>
+           <property name="javax.persistence.jdbc.password" value="Meetpandya40@"/>
+        </properties>
+    </persistence-unit>
+
+</persistence>
+```
+
+- Below is the class for workers, JPA does not creates table explicity , we need to create table of workers.
+
+```
+package orm.jpa;
+
+import javax.persistence.*;
+
+@Entity
+public class Workers {
+
+	@Id
+	private int id;
+	private String name;
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	
+}
+```
+
+- Below is the main method
+
+```
+package orm.jpa;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
+public class MainMethod {
+
+	public static void main(String[] args) {
+		
+		/**
+		 * Provide just configuration file persistence-unit name
+		 */
+		EntityManagerFactory emf=Persistence.createEntityManagerFactory("jpapersistencefile");
+		EntityManager em=emf.createEntityManager();
+		
+		/**
+		 * Inserting data
+		 */
+		
+		Workers wk=new Workers();
+		wk.setId(1);
+		wk.setName("Harsh");
+		em.getTransaction().begin();
+		em.persist(wk);
+		em.getTransaction().commit();
+		
+		/**
+		 * Find data
+		 */
+		
+		Workers wk1=em.find(Workers.class, 1);
+		System.out.println("Name: "+wk1.getName());
+		
+	}
+
+}
+
+Output:
+Name: Harsh
+```
+
+![alt text](Images/image-32.png) 

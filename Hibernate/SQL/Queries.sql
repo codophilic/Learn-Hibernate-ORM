@@ -36,4 +36,14 @@ select * from employee;
 
 select count(*) from paginator;
 
+select * from coders_information;
 
+select * from paginator;
+
+create table workers(
+id int,
+name varchar(50));
+
+truncate table workers;
+
+select * from workers;
