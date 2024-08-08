@@ -4683,3 +4683,149 @@ Name: Harsh
 ```
 
 ![alt text](Images/image-32.png) 
+
+### JPA Architecture
+
+![image](https://github.com/user-attachments/assets/047b20c5-7671-4196-81bc-e28b70be5014) 
+
+- Entity Manager: The central part of JPA, responsible for interacting with the database. Think of it as a "middleman" that handles all database operations.
+- Entity Manager Factory: This is a factory for creating **EntityManager** instances. It's like a factory that produces workers (Entity Managers) who do the actual work (database operations).
+- Entity Transaction: It has a one-to-one relationship with the **EntityManager** class. For each **EntityManager**, operations are maintained by EntityTransaction class. The EntityTransaction interface is used to control transactions on resource-local entity managers. It allows you to begin, commit, and roll back transactions.
+- Entity: The entities are the persistence objects stores as a record in the database.
+- Persistance: The Persistence class has a static method **createEntityManagerFactory** which is used to create an instance of **EntityManagerFactory**. This method takes the name of the persistence unit (defined in **persistence.xml**) and optional properties to configure the factory. The Persistence class acts as the entry point for setting up the JPA environment. When you call **Persistence.createEntityManagerFactory**, it reads the **persistence.xml** configuration, initializes the specified persistence provider (e.g., Hibernate), and creates an **EntityManagerFactory**.
+- Query: The Query interface is used to create and execute queries against the database. It allows you to retrieve data using JPQL (Java Persistence Query Language) or native SQL.
+
+### Understanding flow of JPA 
+
+1. **Application Initialization**:
+	- **Persistence Unit Setup**: The application reads the persistence.xml configuration file to set up the persistence unit. This includes database connection details and any JPA properties.
+	- **EntityManagerFactory Creation**: The Persistence class is used to create an EntityManagerFactory. This factory is a heavyweight object and should be created once per application.
+
+```
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("myPU");
+```
+
+2. **EntityManager Creation**:
+	- The EntityManagerFactory creates an **EntityManager**. The EntityManager is lightweight and is typically created per transaction or per request in web applications.
+
+```
+EntityManager em=emf.createEntityManager();
+```
+
+3. **Transaction Management**:
+	- The EntityManager interacts with the EntityTransaction to manage transactions. Transactions ensure that a series of operations are executed in a consistent and reliable manner.
+
+```
+EntityTransaction transaction = em.getTransaction();
+transaction.begin();
+```
+
+4. **CRUD Operation Execution**:
+	- EntityManager Operations: The EntityManager performs CRUD operations. For creating a new user, it will use the persist method.
+	- Query Execution: If data retrieval is involved, the EntityManager creates and executes Query objects using JPQL or native SQL.
+
+```
+User newUser = new User();
+newUser.setName("John Doe");
+newUser.setEmail("john.doe@example.com");
+em.persist(newUser);
+```
+
+5. **Transaction Commit/Rollback**:
+	- Once the operations are complete, the EntityTransaction is either committed (to save changes) or rolled back (to discard changes) based on the success or failure of the operations.
+
+```
+transaction.commit();
+```
+
+6. **EntityManager and EntityManagerFactory Cleanup**:
+	- After completing the operations, the EntityManager is closed. The EntityManagerFactory is usually closed when the application shuts down.
+
+```
+em.close();
+emf.close();
+```
+
+#### Diagrammatic Flow 
+
+```
+Application Startup
+        |
+        V
++-----------------------+
+|  Persistence Unit     |
+|  (persistence.xml)    |
++-----------------------+
+        |
+        V
++-----------------------+
+|  EntityManagerFactory |
+|    (Creation)         |
++-----------------------+
+        |
+        V
++-----------------------+
+|    EntityManager      |
+|    (Creation)         |
++-----------------------+
+        |
+        V
++-----------------------+
+|  EntityTransaction    |
+|  (Begin)              |
++-----------------------+
+        |
+        V
++-----------------------+
+|    CRUD Operations    |
+|    (EntityManager)    |
++-----------------------+
+        |
+        V
++-----------------------+
+|  Transaction Commit/  |
+|  Rollback (EntityTransaction) |
++-----------------------+
+        |
+        V
++-----------------------+
+|   EntityManager       |
+|   (Close)             |
++-----------------------+
+        |
+        V
++-----------------------+
+|  Application Shutdown |
+|  (Close EntityManagerFactory) |
++-----------------------+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
